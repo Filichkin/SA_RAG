@@ -41,7 +41,8 @@ router.include_router(
     description=(
         'Получить список всех пользователей. Доступно только '
         'администраторам и суперпользователям.'
-    )
+    ),
+    tags=Constants.USERS_TAGS
 )
 async def get_all_users(
     skip: int = Query(0, ge=0, description='Количество записей для пропуска'),
@@ -66,7 +67,8 @@ async def get_all_users(
     description=(
         'Удалить пользователя по ID. Доступно только администраторам и '
         'суперпользователям.'
-    )
+    ),
+    tags=Constants.USERS_TAGS
 )
 async def delete_user(
     user_id: int,
