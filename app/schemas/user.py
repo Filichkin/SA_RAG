@@ -1,22 +1,56 @@
-from datetime import datetime
+from datetime import date
 import re
 from typing import Annotated, Optional
 
 from fastapi_users import schemas
-from pydantic import EmailStr, field_validator, Field, StringConstraints
+from pydantic import EmailStr, field_validator, Field
 
 from app.core.config import Constants, settings
 
 
-PasswordStr = Annotated[
-    str,
-    StringConstraints(
-        strip_whitespace=True,
-        min_length=settings.user_password_min_len,
-        pattern=settings.password_pattern,
-        max_length=settings.user_password_max_len,
-        )
+class UserBase:
+    """Базовый класс с общими полями и валидаторами для пользователей"""
+
+    date_of_birth: Optional[str] = Field(
+        default=None,
+        title='Date of Birth',
+        description='Формат: YYYY-MM-DD',
+    )
+    phone: Annotated[
+        Optional[str],
+        Field(
+            title='Phone Number',
+        ),
     ]
+
+    @field_validator('phone')
+    @classmethod
+    def validate_phone(cls, phone: Optional[str]) -> Optional[str]:
+        if phone is None or phone.strip() == '':
+            return None
+        phone = phone.strip()
+        if not re.fullmatch(settings.phone_pattern, phone):
+            raise ValueError(
+                'Телефон должен быть в формате +7XXXXXXXXXX (11 цифр)'
+            )
+        return phone
+
+    @field_validator('date_of_birth')
+    @classmethod
+    def validate_date_format(
+        cls,
+        date_of_birth: Optional[str]
+    ) -> Optional[str]:
+        if date_of_birth is None:
+            return None
+        if not re.fullmatch(settings.date_pattern, date_of_birth):
+            raise ValueError('Дата рождения должна быть в формате YYYY-MM-DD')
+        # пробуем распарсить как дату, чтобы исключить '1992-13-40'
+        try:
+            date.fromisoformat(date_of_birth)
+        except ValueError:
+            raise ValueError('Некорректная дата рождения')
+        return date_of_birth
 
 
 class UserRead(schemas.BaseUser[int]):
@@ -24,7 +58,11 @@ class UserRead(schemas.BaseUser[int]):
     first_name: str = Field(..., max_length=50)
     last_name: str = Field(..., max_length=50)
     EmailStr: EmailStr
-    date_of_birth: datetime | None = None
+    date_of_birth: Optional[date] = Field(
+        default=None,
+        title='Date of Birth',
+        description='Формат: YYYY-MM-DD',
+    )
     phone: str | None = None
 
     class Config:
@@ -38,7 +76,7 @@ class UserRead(schemas.BaseUser[int]):
         }
 
 
-class UserCreate(schemas.BaseUserCreate):
+class UserCreate(UserBase, schemas.BaseUserCreate):
     email: EmailStr
     password: str = Field(
         ...,
@@ -60,30 +98,6 @@ class UserCreate(schemas.BaseUserCreate):
         min_length=Constants.NAME_MIN_LEN,
         max_length=Constants.NAME_MAX_LEN,
     )
-    date_of_birth: Annotated[
-        Optional[datetime],
-        Field(
-            title='Date of Birth',
-        ),
-    ]
-    phone: Annotated[
-        Optional[str],
-        Field(
-            title='Phone Number',
-        ),
-    ]
-
-    @field_validator('phone')
-    @classmethod
-    def validate_phone(cls, phone: Optional[str]) -> Optional[str]:
-        if phone is None or phone.strip() == '':
-            return None
-        phone = phone.strip()
-        if not re.fullmatch(settings.phone_pattern, phone):
-            raise ValueError(
-                'Телефон должен быть в формате +7XXXXXXXXXX (11 цифр)'
-                )
-        return phone
 
     @field_validator('password')
     @classmethod
@@ -112,5 +126,65 @@ class UserCreate(schemas.BaseUserCreate):
         return password
 
 
-class UserUpdate(schemas.BaseUserUpdate):
-    pass
+class UserUpdate(UserBase, schemas.BaseUserUpdate):
+    email: Optional[EmailStr] = None
+    password: Optional[str] = Field(
+        default=None,
+        title='Password',
+        min_length=settings.user_password_min_len,
+        max_length=settings.user_password_max_len,
+    )
+    first_name: Optional[str] = Field(
+        default=None,
+        title='First Name',
+        description='First Name',
+        min_length=Constants.NAME_MIN_LEN,
+        max_length=Constants.NAME_MAX_LEN,
+    )
+    last_name: Optional[str] = Field(
+        default=None,
+        title='Last Name',
+        description='Last Name',
+        min_length=Constants.NAME_MIN_LEN,
+        max_length=Constants.NAME_MAX_LEN,
+    )
+
+    @field_validator('password')
+    @classmethod
+    def validate_password(cls, password: Optional[str]) -> Optional[str]:
+        # Пароль на апдейте опционален: проверяем только если пришёл непустой
+        if password is None:
+            return None
+        password = password.strip()
+        if password == '':
+            return None
+
+        if len(password) < settings.user_password_min_len:
+            raise ValueError(
+                f'Пароль должен содержать минимум '
+                f'{settings.user_password_min_len} символов'
+            )
+        if len(password) > settings.user_password_max_len:
+            raise ValueError(
+                f'Пароль должен содержать не более '
+                f'{settings.user_password_max_len} символов'
+            )
+
+        if not re.fullmatch(settings.password_pattern, password):
+            raise ValueError(
+                'Пароль не соответствует требованиям безопасности: '
+                'минимум 1 буква, 1 цифра и 1 спецсимвол'
+            )
+        return password
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "email": "new.mail@example.com",
+                "first_name": "Ivan",
+                "last_name": "Petrov",
+                "date_of_birth": "1992-05-20",
+                "phone": "+79031234567",
+                "password": "Newpass1!"
+            }
+        }
