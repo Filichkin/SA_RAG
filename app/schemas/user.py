@@ -3,12 +3,12 @@ import re
 from typing import Optional
 
 from fastapi_users import schemas
-from pydantic import EmailStr, field_validator, Field
+from pydantic import BaseModel, EmailStr, field_validator, Field
 
 from app.core.config import Constants, settings
 
 
-class UserBase:
+class UserBase(BaseModel):
     """Базовый класс с общими полями и валидаторами для пользователей"""
 
     date_of_birth: Optional[date] = Field(
@@ -112,6 +112,19 @@ class UserCreate(UserBase, schemas.BaseUserCreate):
                 )
 
         return password
+
+    class Config:
+        exclude = {'is_active', 'is_superuser', 'is_verified'}
+        json_schema_extra = {
+            "example": {
+                "email": "user@example.com",
+                "password": "SecurePass123!",
+                "first_name": "Alex",
+                "last_name": "Fill",
+                "date_of_birth": "1992-05-20",
+                "phone": "+79031234567"
+            }
+        }
 
 
 class UserUpdate(UserBase, schemas.BaseUserUpdate):
