@@ -42,7 +42,6 @@ class UserBase(BaseModel):
     ) -> Optional[date]:
         if date_of_birth is None:
             return None
-        # Проверяем, что дата не в будущем
         if date_of_birth > date.today():
             raise ValueError('Дата рождения не может быть в будущем')
         return date_of_birth

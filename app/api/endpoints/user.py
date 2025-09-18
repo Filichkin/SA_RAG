@@ -2,14 +2,14 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.validators import current_admin_or_superuser
 from app.core.constants import Constants, Messages, Descriptions
 from app.core.db import get_async_session
 from app.core.user import auth_backend, fastapi_users, current_superuser
 from app.crud.user import user_crud
+from app.logging import logging_config
 from app.models.user import User
 from app.schemas.user import UserCreate, UserRead, UserUpdate
-from app.api.validators import current_admin_or_superuser
-from app.logging import logging_config
 
 
 router = APIRouter()
