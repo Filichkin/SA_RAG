@@ -12,6 +12,13 @@ class Settings(BaseSettings):
     first_superuser_password: Optional[str] = None
     jwt_token_lifetime: int = 3600
     user_password_min_len: int = 8
+    user_password_max_len: int = 128
+    # Регулярное выражение для проверки
+    # правила пароля (например: минимум 1 буква, 1 цифра и 1 спецсимвол)
+    password_pattern: str = (
+        r'^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$'
+        )
+    phone_pattern: str = r'^\+7\d{10}$'
 
     postgres_port: int
     postgres_password: str
