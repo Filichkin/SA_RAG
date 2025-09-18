@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.constants import Constants, Messages, Descriptions
 from app.core.db import get_async_session
-from app.core.user import auth_backend, fastapi_users
+from app.core.user import auth_backend, fastapi_users, current_superuser
 from app.crud.user import user_crud
 from app.models.user import User
 from app.schemas.user import UserCreate, UserRead, UserUpdate
@@ -74,11 +74,11 @@ async def get_all_users(
 async def delete_user(
     user_id: int,
     session: AsyncSession = Depends(get_async_session),
-    current_user: User = Depends(current_admin_or_superuser)
+    current_user: User = Depends(current_superuser)
 ):
     '''
     Удалить пользователя по ID.
-    Доступно только пользователям с ролью администратора или суперпользователя.
+    Доступно только суперпользователям.
     '''
     # Проверяем, что пользователь не пытается удалить самого себя
     if user_id == current_user.id:
