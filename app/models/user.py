@@ -33,7 +33,7 @@ class User(SQLAlchemyBaseUserTable[int], Base):
         )
     phone: Mapped[str | None] = mapped_column(
         String(length=Constants.STRING_LEN),
-        nullable=False
+        nullable=True
         )
     is_driver: Mapped[bool] = mapped_column(
         Boolean,

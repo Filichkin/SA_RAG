@@ -1,6 +1,6 @@
 from datetime import date
 import re
-from typing import Annotated, Optional
+from typing import Optional
 
 from fastapi_users import schemas
 from pydantic import EmailStr, field_validator, Field
@@ -11,17 +11,15 @@ from app.core.config import Constants, settings
 class UserBase:
     """Базовый класс с общими полями и валидаторами для пользователей"""
 
-    date_of_birth: Optional[str] = Field(
+    date_of_birth: Optional[date] = Field(
         default=None,
         title='Date of Birth',
         description='Формат: YYYY-MM-DD',
     )
-    phone: Annotated[
-        Optional[str],
-        Field(
-            title='Phone Number',
-        ),
-    ]
+    phone: Optional[str] = Field(
+        default=None,
+        title='Phone Number',
+    )
 
     @field_validator('phone')
     @classmethod
@@ -39,38 +37,28 @@ class UserBase:
     @classmethod
     def validate_date_format(
         cls,
-        date_of_birth: Optional[str]
-    ) -> Optional[str]:
+        date_of_birth: Optional[date]
+    ) -> Optional[date]:
         if date_of_birth is None:
             return None
-        if not re.fullmatch(settings.date_pattern, date_of_birth):
-            raise ValueError('Дата рождения должна быть в формате YYYY-MM-DD')
-        # пробуем распарсить как дату, чтобы исключить '1992-13-40'
-        try:
-            date.fromisoformat(date_of_birth)
-        except ValueError:
-            raise ValueError('Некорректная дата рождения')
+        # Проверяем, что дата не в будущем
+        if date_of_birth > date.today():
+            raise ValueError('Дата рождения не может быть в будущем')
         return date_of_birth
 
 
-class UserRead(schemas.BaseUser[int]):
+class UserRead(UserBase, schemas.BaseUser[int]):
 
     first_name: str = Field(..., max_length=50)
     last_name: str = Field(..., max_length=50)
-    EmailStr: EmailStr
-    date_of_birth: Optional[date] = Field(
-        default=None,
-        title='Date of Birth',
-        description='Формат: YYYY-MM-DD',
-    )
-    phone: str | None = None
+    email: EmailStr
 
     class Config:
         # Exclude the unwanted fields from the schema
         json_schema_extra = {
             "example": {
                 "email": "user@example.com",
-                "date_of_birth": "1990-01-01T00:00:00Z",
+                "date_of_birth": "1990-01-01",
                 "phone": "+1234567890",
             }
         }
