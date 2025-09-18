@@ -1,12 +1,11 @@
 from fastapi import Depends, HTTPException
 
-from app.core.user import current_administrator, current_superuser
+from app.core.user import current_user
 from app.models.user import User
 
 
 async def current_admin_or_superuser(
-    admin_user: User = Depends(current_administrator),
-    superuser: User = Depends(current_superuser)
+    user: User = Depends(current_user)
 ) -> User:
     '''
     Зависимость для проверки роли администратора ИЛИ суперпользователя.
@@ -14,11 +13,11 @@ async def current_admin_or_superuser(
     суперпользователем.
     '''
     # Если пользователь суперпользователь, возвращаем его
-    if superuser.is_superuser:
-        return superuser
+    if user.is_superuser:
+        return user
     # Если пользователь администратор, возвращаем его
-    if admin_user.is_administrator:
-        return admin_user
+    if user.is_administrator:
+        return user
     # Если ни то, ни другое, выбрасываем исключение
     raise HTTPException(
         status_code=403,
