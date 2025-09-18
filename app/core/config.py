@@ -35,7 +35,8 @@ class Constants:
     JWT_TOKEN_URL = 'auth/jwt/login'
     JWT_AUTH_BACKEND_NAME = 'jwt'
     NAME_MIN_LEN = 1
-    NAME_MAX_LEN = 100
+    NAME_MAX_LEN = 50
+    STRING_LEN = 120
     RAG_ENDPOINTS_PREFIX = '/api'
     RAG_ENDPOINTS_TAGS = ('RAG_Agent',)
 
