@@ -49,8 +49,8 @@ class UserBase:
 
 class UserRead(UserBase, schemas.BaseUser[int]):
 
-    first_name: str = Field(..., max_length=50)
-    last_name: str = Field(..., max_length=50)
+    first_name: str = Field(..., max_length=Constants.NAME_MAX_LEN)
+    last_name: str = Field(..., max_length=Constants.NAME_MAX_LEN)
     email: EmailStr
 
     class Config:
@@ -169,8 +169,8 @@ class UserUpdate(UserBase, schemas.BaseUserUpdate):
         json_schema_extra = {
             "example": {
                 "email": "new.mail@example.com",
-                "first_name": "Ivan",
-                "last_name": "Petrov",
+                "first_name": "Alex",
+                "last_name": "Fill",
                 "date_of_birth": "1992-05-20",
                 "phone": "+79031234567",
                 "password": "Newpass1!"

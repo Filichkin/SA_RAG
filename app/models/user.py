@@ -1,7 +1,7 @@
-from datetime import datetime
+from datetime import datetime, date
 
 from fastapi_users_db_sqlalchemy import SQLAlchemyBaseUserTable
-from sqlalchemy import Boolean, DateTime, String
+from sqlalchemy import Boolean, DateTime, String, Date
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.sql.functions import func
 
@@ -28,8 +28,8 @@ class User(SQLAlchemyBaseUserTable[int], Base):
         String(length=Constants.STRING_LEN),
         index=False
         )
-    date_of_birth: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True)
+    date_of_birth: Mapped[date | None] = mapped_column(
+        Date
         )
     phone: Mapped[str | None] = mapped_column(
         String(length=Constants.STRING_LEN),
