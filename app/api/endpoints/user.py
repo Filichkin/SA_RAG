@@ -9,6 +9,7 @@ from app.crud.user import user_crud
 from app.models.user import User
 from app.schemas.user import UserCreate, UserRead, UserUpdate
 from app.api.validators import current_admin_or_superuser
+from app.logging import logging_config
 
 
 router = APIRouter()
@@ -60,8 +61,27 @@ async def get_all_users(
     Получить всех пользователей с пагинацией.
     Доступно только пользователям с ролью администратора или суперпользователя.
     '''
-    users = await user_crud.get_all_users(session, skip=skip, limit=limit)
-    return users
+    user_logger = logging_config.get_endpoint_logger('user')
+
+    user_logger.info(
+        f'Запрос на получение всех пользователей от пользователя '
+        f'{current_user.id} (email: {current_user.email}, роль: '
+        f'{"admin" if current_user.is_administrator else "superuser"})'
+    )
+
+    try:
+        users = await user_crud.get_all_users(session, skip=skip, limit=limit)
+        user_logger.info(
+            f'Успешно получено {len(users)} пользователей '
+            f'(skip={skip}, limit={limit})'
+        )
+        return users
+    except Exception as e:
+        user_logger.error(
+            f'Ошибка при получении пользователей: {str(e)}',
+            exc_info=True
+        )
+        raise
 
 
 @router.delete(
@@ -80,18 +100,45 @@ async def delete_user(
     Удалить пользователя по ID.
     Доступно только суперпользователям.
     '''
+    user_logger = logging_config.get_endpoint_logger('user')
+
+    user_logger.info(
+        f'Запрос на удаление пользователя {user_id} от суперпользователя '
+        f'{current_user.id} (email: {current_user.email})'
+    )
+
     # Проверяем, что пользователь не пытается удалить самого себя
     if user_id == current_user.id:
+        user_logger.warning(
+            f'Попытка удаления самого себя: пользователь {current_user.id} '
+            f'пытается удалить себя'
+        )
         raise HTTPException(
             status_code=Constants.HTTP_400_BAD_REQUEST,
             detail=Messages.CANNOT_DELETE_SELF_MSG
         )
 
-    user = await user_crud.delete_user_by_id(user_id, session)
-    if not user:
-        raise HTTPException(
-            status_code=Constants.HTTP_404_NOT_FOUND,
-            detail=Messages.USER_NOT_FOUND_MSG
-        )
+    try:
+        user = await user_crud.delete_user_by_id(user_id, session)
+        if not user:
+            user_logger.warning(f'Пользователь с ID {user_id} не найден')
+            raise HTTPException(
+                status_code=Constants.HTTP_404_NOT_FOUND,
+                detail=Messages.USER_NOT_FOUND_MSG
+            )
 
-    return user
+        user_logger.info(
+            f'Пользователь {user_id} (email: {user.email}) успешно удален '
+            f'суперпользователем {current_user.id}'
+        )
+        return user
+
+    except HTTPException:
+        # Перебрасываем HTTP исключения без дополнительного логирования
+        raise
+    except Exception as e:
+        user_logger.error(
+            f'Ошибка при удалении пользователя {user_id}: {str(e)}',
+            exc_info=True
+        )
+        raise
