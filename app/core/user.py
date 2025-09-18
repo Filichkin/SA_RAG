@@ -1,7 +1,7 @@
 import logging
 from typing import Optional, Union
 
-from fastapi import Depends, Request
+from fastapi import Depends, HTTPException, Request
 from fastapi_users import (
     BaseUserManager,
     FastAPIUsers,
@@ -84,3 +84,33 @@ current_superuser = fastapi_users.current_user(
     active=True,
     superuser=True
 )
+
+
+async def current_driver(user: User = Depends(current_user)) -> User:
+    """Зависимость для получения текущего пользователя-водителя"""
+    if not user.is_driver:
+        raise HTTPException(
+            status_code=403,
+            detail="Недостаточно прав. Требуется роль водителя."
+        )
+    return user
+
+
+async def current_assistant(user: User = Depends(current_user)) -> User:
+    """Зависимость для получения текущего пользователя-ассистента"""
+    if not user.is_assistant:
+        raise HTTPException(
+            status_code=403,
+            detail="Недостаточно прав. Требуется роль ассистента."
+        )
+    return user
+
+
+async def current_administrator(user: User = Depends(current_user)) -> User:
+    """Зависимость для получения текущего пользователя-администратора"""
+    if not user.is_administrator:
+        raise HTTPException(
+            status_code=403,
+            detail="Недостаточно прав. Требуется роль администратора."
+        )
+    return user
