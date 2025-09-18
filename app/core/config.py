@@ -21,6 +21,9 @@ class Settings(BaseSettings):
     phone_pattern: str = r'^\+7\d{10}$'
     date_pattern: str = r'^\d{4}-\d{2}-\d{2}$'
 
+    logging_format: str = '%(asctime)s - %(levelname)s - %(message)s'
+    logging_dt_format: str = '%Y-%m-%d %H:%M:%S'
+
     postgres_port: int
     postgres_password: str
     postgres_user: str
