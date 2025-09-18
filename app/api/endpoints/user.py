@@ -2,7 +2,7 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.config import Constants
+from app.core.config import Constants, Messages, Descriptions
 from app.core.db import get_async_session
 from app.core.user import auth_backend, fastapi_users
 from app.crud.user import user_crud
@@ -35,19 +35,23 @@ router.include_router(
 
 
 @router.get(
-    '/all',
+    Constants.GET_ALL_USERS_PREFIX,
     response_model=List[UserRead],
-    summary='Получить всех пользователей',
-    description=(
-        'Получить список всех пользователей. Доступно только '
-        'администраторам и суперпользователям.'
-    ),
+    summary=Descriptions.GET_ALL_USERS_SUMMARY,
+    description=Descriptions.GET_ALL_USERS_DESCRIPTION,
     tags=Constants.USERS_TAGS
 )
 async def get_all_users(
-    skip: int = Query(0, ge=0, description='Количество записей для пропуска'),
+    skip: int = Query(
+        Constants.DEFAULT_SKIP,
+        ge=0,
+        description=Descriptions.SKIP_DESCRIPTION
+    ),
     limit: int = Query(
-        100, ge=1, le=1000, description='Максимальное количество записей'
+        Constants.DEFAULT_LIMIT,
+        ge=1,
+        le=Constants.MAX_LIMIT,
+        description=Descriptions.LIMIT_DESCRIPTION
     ),
     session: AsyncSession = Depends(get_async_session),
     current_user: User = Depends(current_admin_or_superuser)
@@ -61,13 +65,10 @@ async def get_all_users(
 
 
 @router.delete(
-    '/{user_id}',
+    Constants.DELETE_USER_PREFIX,
     response_model=UserRead,
-    summary='Удалить пользователя',
-    description=(
-        'Удалить пользователя по ID. Доступно только администраторам и '
-        'суперпользователям.'
-    ),
+    summary=Descriptions.DELETE_USER_SUMMARY,
+    description=Descriptions.DELETE_USER_DESCRIPTION,
     tags=Constants.USERS_TAGS
 )
 async def delete_user(
@@ -82,15 +83,15 @@ async def delete_user(
     # Проверяем, что пользователь не пытается удалить самого себя
     if user_id == current_user.id:
         raise HTTPException(
-            status_code=400,
-            detail='Нельзя удалить самого себя'
+            status_code=Constants.HTTP_400_BAD_REQUEST,
+            detail=Messages.CANNOT_DELETE_SELF_MSG
         )
 
     user = await user_crud.delete_user_by_id(user_id, session)
     if not user:
         raise HTTPException(
-            status_code=404,
-            detail='Пользователь не найден'
+            status_code=Constants.HTTP_404_NOT_FOUND,
+            detail=Messages.USER_NOT_FOUND_MSG
         )
 
     return user

@@ -1,6 +1,7 @@
 from fastapi import Depends, HTTPException
 
 from app.core.user import current_user
+from app.core.config import Constants, Messages
 from app.models.user import User
 
 
@@ -20,9 +21,6 @@ async def current_admin_or_superuser(
         return user
     # Если ни то, ни другое, выбрасываем исключение
     raise HTTPException(
-        status_code=403,
-        detail=(
-            'Недостаточно прав. Требуется роль администратора или '
-            'суперпользователя.'
-        )
+        status_code=Constants.HTTP_403_FORBIDDEN,
+        detail=Messages.INSUFFICIENT_PERMISSIONS_MSG
     )
