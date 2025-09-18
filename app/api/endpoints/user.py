@@ -2,7 +2,7 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.config import Constants, Messages, Descriptions
+from app.core.constants import Constants, Messages, Descriptions
 from app.core.db import get_async_session
 from app.core.user import auth_backend, fastapi_users
 from app.crud.user import user_crud

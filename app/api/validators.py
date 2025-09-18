@@ -1,7 +1,7 @@
 from fastapi import Depends, HTTPException
 
 from app.core.user import current_user
-from app.core.config import Constants, Messages
+from app.core.constants import Constants, Messages
 from app.models.user import User
 
 

@@ -5,7 +5,7 @@ from sqlalchemy import Boolean, DateTime, String, Date
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.sql.functions import func
 
-from app.core.config import Constants
+from app.core.constants import Constants
 from app.core.db import Base
 
 

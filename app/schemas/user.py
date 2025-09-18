@@ -5,7 +5,8 @@ from typing import Optional
 from fastapi_users import schemas
 from pydantic import BaseModel, EmailStr, field_validator, Field
 
-from app.core.config import Constants, settings
+from app.core.config import settings
+from app.core.constants import Constants
 
 
 class UserBase(BaseModel):
