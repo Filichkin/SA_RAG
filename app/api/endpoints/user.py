@@ -16,11 +16,11 @@ async def current_admin_or_superuser(
     admin_user: User = Depends(current_administrator),
     superuser: User = Depends(current_superuser)
 ) -> User:
-    """
+    '''
     Зависимость для проверки роли администратора ИЛИ суперпользователя.
     Возвращает пользователя, если он является администратором или
     суперпользователем.
-    """
+    '''
     # Если пользователь суперпользователь, возвращаем его
     if superuser.is_superuser:
         return superuser
@@ -31,8 +31,8 @@ async def current_admin_or_superuser(
     raise HTTPException(
         status_code=403,
         detail=(
-            "Недостаточно прав. Требуется роль администратора или "
-            "суперпользователя."
+            'Недостаточно прав. Требуется роль администратора или '
+            'суперпользователя.'
         )
     )
 
@@ -61,37 +61,37 @@ router.include_router(
 
 
 @router.get(
-    "/all",
+    '/all',
     response_model=List[UserRead],
-    summary="Получить всех пользователей",
+    summary='Получить всех пользователей',
     description=(
-        "Получить список всех пользователей. Доступно только "
-        "администраторам и суперпользователям."
+        'Получить список всех пользователей. Доступно только '
+        'администраторам и суперпользователям.'
     )
 )
 async def get_all_users(
-    skip: int = Query(0, ge=0, description="Количество записей для пропуска"),
+    skip: int = Query(0, ge=0, description='Количество записей для пропуска'),
     limit: int = Query(
-        100, ge=1, le=1000, description="Максимальное количество записей"
+        100, ge=1, le=1000, description='Максимальное количество записей'
     ),
     session: AsyncSession = Depends(get_async_session),
     current_user: User = Depends(current_admin_or_superuser)
 ):
-    """
+    '''
     Получить всех пользователей с пагинацией.
     Доступно только пользователям с ролью администратора или суперпользователя.
-    """
+    '''
     users = await user_crud.get_all_users(session, skip=skip, limit=limit)
     return users
 
 
 @router.delete(
-    "/{user_id}",
+    '/{user_id}',
     response_model=UserRead,
-    summary="Удалить пользователя",
+    summary='Удалить пользователя',
     description=(
-        "Удалить пользователя по ID. Доступно только администраторам и "
-        "суперпользователям."
+        'Удалить пользователя по ID. Доступно только администраторам и '
+        'суперпользователям.'
     )
 )
 async def delete_user(
@@ -99,22 +99,22 @@ async def delete_user(
     session: AsyncSession = Depends(get_async_session),
     current_user: User = Depends(current_admin_or_superuser)
 ):
-    """
+    '''
     Удалить пользователя по ID.
     Доступно только пользователям с ролью администратора или суперпользователя.
-    """
+    '''
     # Проверяем, что пользователь не пытается удалить самого себя
     if user_id == current_user.id:
         raise HTTPException(
             status_code=400,
-            detail="Нельзя удалить самого себя"
+            detail='Нельзя удалить самого себя'
         )
 
     user = await user_crud.delete_user_by_id(user_id, session)
     if not user:
         raise HTTPException(
             status_code=404,
-            detail="Пользователь не найден"
+            detail='Пользователь не найден'
         )
 
     return user

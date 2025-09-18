@@ -14,7 +14,7 @@ class CRUDUser(CRUDBase):
         skip: int = 0,
         limit: int = 100
     ) -> List[User]:
-        """Получить всех пользователей с пагинацией"""
+        '''Получить всех пользователей с пагинацией'''
         result = await session.execute(
             select(User)
             .offset(skip)
@@ -28,7 +28,7 @@ class CRUDUser(CRUDBase):
         user_id: int,
         session: AsyncSession
     ) -> Optional[User]:
-        """Удалить пользователя по ID"""
+        '''Удалить пользователя по ID'''
         user = await self.get(user_id, session)
         if user:
             await self.remove(user, session)
