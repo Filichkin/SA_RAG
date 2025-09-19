@@ -6,11 +6,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.validators import current_admin_or_superuser
 from app.core.constants import Constants, Messages, Descriptions
 from app.core.db import get_async_session
-from app.core.user import auth_backend, fastapi_users, current_superuser
+from app.core.user import (
+    auth_backend, fastapi_users, current_superuser, current_user
+)
 from app.crud.user import user_crud
 from app.logging import logging_config
 from app.models.user import User
-from app.schemas.user import UserCreate, UserRead, UserUpdate
+from app.schemas.user import (
+    UserCreate, UserRead, UserUpdate, UserChangePassword
+)
 
 
 router = APIRouter()
@@ -140,6 +144,64 @@ async def delete_user(
     except Exception as e:
         user_logger.error(
             f'Ошибка при удалении пользователя {user_id}: {str(e)}',
+            exc_info=True
+        )
+        raise
+
+
+@router.post(
+    Constants.CHANGE_PASSWORD_PREFIX,
+    summary=Descriptions.CHANGE_PASSWORD_SUMMARY,
+    description=Descriptions.CHANGE_PASSWORD_DESCRIPTION,
+    tags=Constants.USERS_TAGS
+)
+async def change_password(
+    password_data: UserChangePassword,
+    session: AsyncSession = Depends(get_async_session),
+    current_user: User = Depends(current_user)
+):
+    '''
+    Изменить пароль текущего пользователя.
+    Требуется указать текущий пароль для подтверждения.
+    '''
+    user_logger = logging_config.get_endpoint_logger('user')
+
+    user_logger.info(
+        f'Запрос на смену пароля от пользователя {current_user.id} '
+        f'(email: {current_user.email})'
+    )
+
+    try:
+        success = await user_crud.change_password(
+            user=current_user,
+            old_password=password_data.old_password,
+            new_password=password_data.new_password,
+            session=session
+        )
+
+        if not success:
+            user_logger.warning(
+                f'Неверный текущий пароль для пользователя {current_user.id}'
+            )
+            raise HTTPException(
+                status_code=Constants.HTTP_400_BAD_REQUEST,
+                detail=Messages.INVALID_OLD_PASSWORD_MSG
+            )
+
+        user_logger.info(
+            f'Пароль успешно изменен для пользователя {current_user.id} '
+            f'(email: {current_user.email})'
+        )
+
+        return {'message': Messages.PASSWORD_CHANGED_SUCCESS_MSG}
+
+    except HTTPException:
+        # Перебрасываем HTTP исключения без дополнительного логирования
+        raise
+    except Exception as e:
+        user_logger.error(
+            f'Ошибка при смене пароля для пользователя {current_user.id}: '
+            f'{str(e)}',
             exc_info=True
         )
         raise

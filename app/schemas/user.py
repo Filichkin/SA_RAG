@@ -96,28 +96,7 @@ class UserCreate(UserBase, schemas.BaseUserCreate):
     @field_validator('password')
     @classmethod
     def validate_password(cls, password: str) -> str:
-        if not password:
-            raise ValueError('Пароль обязателен')
-
-        password = password.strip()
-        if len(password) < settings.user_password_min_len:
-            raise ValueError(
-                f'Пароль должен содержать минимум '
-                f'{settings.user_password_min_len} символов'
-                )
-        if len(password) > settings.user_password_max_len:
-            raise ValueError(
-                f'Пароль должен содержать не более '
-                f'{settings.user_password_max_len} символов'
-                )
-
-        if not re.fullmatch(settings.password_pattern, password):
-            raise ValueError(
-                'Пароль не соответствует требованиям безопасности: '
-                'минимум 1 буква, 1 цифра и 1 спецсимвол)'
-                )
-
-        return password
+        return _validate_password_strength(password)
 
     class Config:
         exclude = {'is_active', 'is_superuser', 'is_verified'}
@@ -133,14 +112,62 @@ class UserCreate(UserBase, schemas.BaseUserCreate):
         }
 
 
-class UserUpdate(UserBase, schemas.BaseUserUpdate):
-    email: Optional[EmailStr] = None
-    password: Optional[str] = Field(
-        default=None,
-        title='Password',
+def _validate_password_strength(password: str) -> str:
+    '''Общая функция валидации пароля для избежания дублирования кода'''
+    if not password:
+        raise ValueError('Пароль обязателен')
+
+    password = password.strip()
+    if len(password) < settings.user_password_min_len:
+        raise ValueError(
+            f'Пароль должен содержать минимум '
+            f'{settings.user_password_min_len} символов'
+        )
+    if len(password) > settings.user_password_max_len:
+        raise ValueError(
+            f'Пароль должен содержать не более '
+            f'{settings.user_password_max_len} символов'
+        )
+
+    if not re.fullmatch(settings.password_pattern, password):
+        raise ValueError(
+            'Пароль не соответствует требованиям безопасности: '
+            'минимум 1 буква, 1 цифра и 1 спецсимвол'
+        )
+    return password
+
+
+class UserChangePassword(BaseModel):
+    '''Схема для смены пароля пользователя'''
+    old_password: str = Field(
+        ...,
+        title='Old Password',
+        description='Текущий пароль пользователя'
+    )
+    new_password: str = Field(
+        ...,
+        title='New Password',
+        description='Новый пароль пользователя',
         min_length=settings.user_password_min_len,
         max_length=settings.user_password_max_len,
     )
+
+    @field_validator('new_password')
+    @classmethod
+    def validate_new_password(cls, password: str) -> str:
+        return _validate_password_strength(password)
+
+    class Config:
+        json_schema_extra = {
+            'example': {
+                'old_password': 'OldPass123!',
+                'new_password': 'NewPass456!'
+            }
+        }
+
+
+class UserUpdate(UserBase, schemas.BaseUserUpdate):
+    email: Optional[EmailStr] = None
     first_name: Optional[str] = Field(
         default=None,
         title='First Name',
@@ -156,42 +183,13 @@ class UserUpdate(UserBase, schemas.BaseUserUpdate):
         max_length=Constants.NAME_MAX_LEN,
     )
 
-    @field_validator('password')
-    @classmethod
-    def validate_password(cls, password: Optional[str]) -> Optional[str]:
-        # Пароль на апдейте опционален: проверяем только если пришёл непустой
-        if password is None:
-            return None
-        password = password.strip()
-        if password == '':
-            return None
-
-        if len(password) < settings.user_password_min_len:
-            raise ValueError(
-                f'Пароль должен содержать минимум '
-                f'{settings.user_password_min_len} символов'
-            )
-        if len(password) > settings.user_password_max_len:
-            raise ValueError(
-                f'Пароль должен содержать не более '
-                f'{settings.user_password_max_len} символов'
-            )
-
-        if not re.fullmatch(settings.password_pattern, password):
-            raise ValueError(
-                'Пароль не соответствует требованиям безопасности: '
-                'минимум 1 буква, 1 цифра и 1 спецсимвол'
-            )
-        return password
-
     class Config:
         json_schema_extra = {
-            "example": {
-                "email": "new.mail@example.com",
-                "first_name": "Alex",
-                "last_name": "Fill",
-                "date_of_birth": "1992-05-20",
-                "phone": "+79031234567",
-                "password": "Newpass1!"
+            'example': {
+                'email': 'new.mail@example.com',
+                'first_name': 'Alex',
+                'last_name': 'Fill',
+                'date_of_birth': '1992-05-20',
+                'phone': '+79031234567'
             }
         }

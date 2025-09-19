@@ -28,6 +28,7 @@ class Constants:
     # User management endpoints
     GET_ALL_USERS_PREFIX = '/users'
     DELETE_USER_PREFIX = 'users/{user_id}'
+    CHANGE_PASSWORD_PREFIX = '/users/change-password'
 
 
 class Messages:
@@ -44,6 +45,8 @@ class Messages:
     )
     CANNOT_DELETE_SELF_MSG = 'Нельзя удалить самого себя'
     USER_NOT_FOUND_MSG = 'Пользователь не найден'
+    INVALID_OLD_PASSWORD_MSG = 'Неверный текущий пароль'
+    PASSWORD_CHANGED_SUCCESS_MSG = 'Пароль успешно изменен'
 
 
 class Descriptions:
@@ -60,4 +63,9 @@ class Descriptions:
     DELETE_USER_SUMMARY = 'Удалить пользователя'
     DELETE_USER_DESCRIPTION = (
         'Удалить пользователя по ID. Доступно только суперпользователям.'
+    )
+    CHANGE_PASSWORD_SUMMARY = 'Изменить пароль'
+    CHANGE_PASSWORD_DESCRIPTION = (
+        'Изменить пароль текущего пользователя. Требуется указать '
+        'текущий пароль для подтверждения.'
     )
