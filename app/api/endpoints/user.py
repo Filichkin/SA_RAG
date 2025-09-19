@@ -7,7 +7,10 @@ from app.api.validators import current_admin_or_superuser
 from app.core.constants import Constants, Messages, Descriptions
 from app.core.db import get_async_session
 from app.core.user import (
-    auth_backend, fastapi_users, current_superuser, current_user,
+    auth_backend,
+    current_superuser,
+    current_user,
+    fastapi_users,
     get_jwt_strategy
 )
 from app.crud.user import user_crud
