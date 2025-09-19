@@ -41,9 +41,14 @@ class CustomJWTStrategy(JWTStrategy):
 
     async def read_token(self, token: str, user_manager) -> Optional[User]:
         '''Читает токен и проверяет его валидность с учетом версии'''
+        print(f"DEBUG: read_token called with token: {token[:50]}...")
+        
         # Сначала используем базовую логику
         user = await super().read_token(token, user_manager)
+        print(f"DEBUG: super().read_token returned user: {user}")
+        
         if not user:
+            print("DEBUG: No user from super().read_token")
             return None
 
         try:
@@ -51,19 +56,25 @@ class CustomJWTStrategy(JWTStrategy):
             payload = jwt.decode(
                 token,
                 self.secret,
-                algorithms=['HS256']
+                algorithms=['HS256'],
+                audience=self.token_audience
             )
+            print(f"DEBUG: Token payload: {payload}")
 
             # Получаем версию токена
             token_version = payload.get('token_version', 1)
+            print(f"DEBUG: Token version: {token_version}, User version: {user.token_version}")
 
             # Проверяем версию токена
             if user.token_version != token_version:
+                print(f"DEBUG: Token version mismatch! Token: {token_version}, User: {user.token_version}")
                 return None
 
+            print("DEBUG: Token validation successful")
             return user
 
-        except jwt.InvalidTokenError:
+        except jwt.InvalidTokenError as e:
+            print(f"DEBUG: JWT decode error: {e}")
             return None
 
     async def write_token(self, user: User) -> str:
@@ -73,11 +84,16 @@ class CustomJWTStrategy(JWTStrategy):
             'token_version': user.token_version,
             'aud': self.token_audience,
         }
-        return generate_jwt(
+        print(f"DEBUG: write_token for user {user.id}, token_version: {user.token_version}")
+        print(f"DEBUG: Token data: {data}")
+        
+        token = generate_jwt(
             data,
             self.secret,
             self.lifetime_seconds
         )
+        print(f"DEBUG: Generated token: {token[:50]}...")
+        return token
 
 
 def get_jwt_strategy() -> CustomJWTStrategy:
