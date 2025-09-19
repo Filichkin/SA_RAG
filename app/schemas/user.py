@@ -48,18 +48,24 @@ class UserBase(BaseModel):
 
 
 class UserRead(UserBase, schemas.BaseUser[int]):
-
-    first_name: str = Field(..., max_length=Constants.NAME_MAX_LEN)
-    last_name: str = Field(..., max_length=Constants.NAME_MAX_LEN)
+    first_name: str
+    last_name: str
     email: EmailStr
 
     class Config:
         # Exclude the unwanted fields from the schema
+        exclude = {'is_active', 'is_superuser', 'is_verified'}
         json_schema_extra = {
             "example": {
+                "id": 1,
                 "email": "user@example.com",
+                "first_name": "Alex",
+                "last_name": "Fill",
                 "date_of_birth": "1990-01-01",
-                "phone": "+1234567890",
+                "phone": "+79031234567",
+                "is_driver": True,
+                "is_assistant": False,
+                "is_administrator": False
             }
         }
 
