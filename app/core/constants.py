@@ -26,8 +26,8 @@ class Constants:
     MAX_LIMIT = 100
 
     # User management endpoints
-    GET_ALL_USERS_PREFIX = '/all'
-    DELETE_USER_PREFIX = '/{user_id}'
+    GET_ALL_USERS_PREFIX = '/users'
+    DELETE_USER_PREFIX = 'users/{user_id}'
 
 
 class Messages:
