@@ -196,7 +196,7 @@ async def change_password(
 
         # Генерируем новый токен с обновленной версией
         jwt_strategy = get_jwt_strategy()
-        new_token = jwt_strategy.write_token(current_user)
+        new_token = await jwt_strategy.write_token(current_user)
 
         return {
             'message': Messages.PASSWORD_CHANGED_SUCCESS_MSG,

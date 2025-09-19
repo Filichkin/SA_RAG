@@ -70,7 +70,7 @@ class CustomJWTStrategy(JWTStrategy):
         except jwt.InvalidTokenError:
             return None
 
-    def write_token(self, user: User) -> str:
+    async def write_token(self, user: User) -> str:
         '''Создает токен с версией пользователя'''
         data = {
             'sub': str(user.id),
