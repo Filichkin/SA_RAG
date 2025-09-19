@@ -41,25 +41,21 @@ class CustomJWTStrategy(JWTStrategy):
 
     async def read_token(self, token: str, user_manager) -> Optional[User]:
         '''Читает токен и проверяет его валидность с учетом версии'''
+        # Сначала используем базовую логику
+        user = await super().read_token(token, user_manager)
+        if not user:
+            return None
+
         try:
-            # Декодируем токен
+            # Декодируем токен для проверки версии
             payload = jwt.decode(
                 token,
                 self.secret,
                 algorithms=['HS256']
             )
 
-            # Получаем данные из токена
-            user_id = payload.get('sub')
+            # Получаем версию токена
             token_version = payload.get('token_version', 1)
-
-            if not user_id:
-                return None
-
-            # Получаем пользователя из БД
-            user = await user_manager.get(int(user_id))
-            if not user:
-                return None
 
             # Проверяем версию токена
             if user.token_version != token_version:
