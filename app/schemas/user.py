@@ -7,6 +7,9 @@ from pydantic import BaseModel, EmailStr, field_validator, Field
 
 from app.core.config import settings
 from app.core.constants import Constants
+from app.schemas.validators import (
+    validate_password_strength, validate_password_change
+)
 
 
 class UserBase(BaseModel):
@@ -96,7 +99,7 @@ class UserCreate(UserBase, schemas.BaseUserCreate):
     @field_validator('password')
     @classmethod
     def validate_password(cls, password: str) -> str:
-        return _validate_password_strength(password)
+        return validate_password_strength(password)
 
     class Config:
         exclude = {'is_active', 'is_superuser', 'is_verified'}
@@ -110,31 +113,6 @@ class UserCreate(UserBase, schemas.BaseUserCreate):
                 "phone": "+79031234567"
             }
         }
-
-
-def _validate_password_strength(password: str) -> str:
-    '''Общая функция валидации пароля для избежания дублирования кода'''
-    if not password:
-        raise ValueError('Пароль обязателен')
-
-    password = password.strip()
-    if len(password) < settings.user_password_min_len:
-        raise ValueError(
-            f'Пароль должен содержать минимум '
-            f'{settings.user_password_min_len} символов'
-        )
-    if len(password) > settings.user_password_max_len:
-        raise ValueError(
-            f'Пароль должен содержать не более '
-            f'{settings.user_password_max_len} символов'
-        )
-
-    if not re.fullmatch(settings.password_pattern, password):
-        raise ValueError(
-            'Пароль не соответствует требованиям безопасности: '
-            'минимум 1 буква, 1 цифра и 1 спецсимвол'
-        )
-    return password
 
 
 class UserChangePassword(BaseModel):
@@ -154,8 +132,10 @@ class UserChangePassword(BaseModel):
 
     @field_validator('new_password')
     @classmethod
-    def validate_new_password(cls, password: str) -> str:
-        return _validate_password_strength(password)
+    def validate_new_password(cls, password: str, info) -> str:
+        # Получаем старый пароль из данных
+        old_password = info.data.get('old_password', '')
+        return validate_password_change(old_password, password)
 
     class Config:
         json_schema_extra = {
