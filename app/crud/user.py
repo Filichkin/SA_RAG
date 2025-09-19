@@ -56,6 +56,9 @@ class CRUDUser(CRUDBase):
         # Хешируем новый пароль
         user.hashed_password = self.password_helper.hash(new_password)
 
+        # Увеличиваем версию токена для инвалидации всех существующих токенов
+        user.token_version += 1
+
         # Сохраняем изменения
         await session.commit()
         await session.refresh(user)

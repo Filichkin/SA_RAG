@@ -7,7 +7,8 @@ from app.api.validators import current_admin_or_superuser
 from app.core.constants import Constants, Messages, Descriptions
 from app.core.db import get_async_session
 from app.core.user import (
-    auth_backend, fastapi_users, current_superuser, current_user
+    auth_backend, fastapi_users, current_superuser, current_user,
+    get_jwt_strategy
 )
 from app.crud.user import user_crud
 from app.logging import logging_config
@@ -193,7 +194,15 @@ async def change_password(
             f'(email: {current_user.email})'
         )
 
-        return {'message': Messages.PASSWORD_CHANGED_SUCCESS_MSG}
+        # Генерируем новый токен с обновленной версией
+        jwt_strategy = get_jwt_strategy()
+        new_token = jwt_strategy.write_token(current_user)
+
+        return {
+            'message': Messages.PASSWORD_CHANGED_SUCCESS_MSG,
+            'access_token': new_token,
+            'token_type': 'bearer'
+        }
 
     except HTTPException:
         # Перебрасываем HTTP исключения без дополнительного логирования

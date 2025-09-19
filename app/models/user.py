@@ -1,7 +1,7 @@
 from datetime import datetime, date
 
 from fastapi_users_db_sqlalchemy import SQLAlchemyBaseUserTable
-from sqlalchemy import Boolean, DateTime, String, Date
+from sqlalchemy import Boolean, DateTime, String, Date, Integer
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.sql.functions import func
 
@@ -48,6 +48,11 @@ class User(SQLAlchemyBaseUserTable[int], Base):
     is_administrator: Mapped[bool] = mapped_column(
         Boolean,
         default=False,
+        nullable=False
+        )
+    token_version: Mapped[int] = mapped_column(
+        Integer,
+        default=1,
         nullable=False
         )
 

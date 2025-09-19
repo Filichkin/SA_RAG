@@ -13,6 +13,8 @@ from fastapi_users.authentication import (
     BearerTransport,
     JWTStrategy
 )
+from fastapi_users.jwt import generate_jwt
+import jwt
 from fastapi_users_db_sqlalchemy import SQLAlchemyUserDatabase
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -34,8 +36,56 @@ bearer_transport = BearerTransport(
 )
 
 
-def get_jwt_strategy() -> JWTStrategy:
-    return JWTStrategy(
+class CustomJWTStrategy(JWTStrategy):
+    '''Кастомная JWT стратегия с проверкой версии токена'''
+
+    async def read_token(self, token: str, user_manager) -> Optional[User]:
+        '''Читает токен и проверяет его валидность с учетом версии'''
+        try:
+            # Декодируем токен
+            payload = jwt.decode(
+                token,
+                self.secret,
+                algorithms=['HS256']
+            )
+
+            # Получаем данные из токена
+            user_id = payload.get('sub')
+            token_version = payload.get('token_version', 1)
+
+            if not user_id:
+                return None
+
+            # Получаем пользователя из БД
+            user = await user_manager.get(int(user_id))
+            if not user:
+                return None
+
+            # Проверяем версию токена
+            if user.token_version != token_version:
+                return None
+
+            return user
+
+        except jwt.InvalidTokenError:
+            return None
+
+    def write_token(self, user: User) -> str:
+        '''Создает токен с версией пользователя'''
+        data = {
+            'sub': str(user.id),
+            'token_version': user.token_version,
+            'aud': self.token_audience,
+        }
+        return generate_jwt(
+            data,
+            self.secret,
+            self.lifetime_seconds
+        )
+
+
+def get_jwt_strategy() -> CustomJWTStrategy:
+    return CustomJWTStrategy(
         secret=settings.secret,
         lifetime_seconds=settings.jwt_token_lifetime,
     )
