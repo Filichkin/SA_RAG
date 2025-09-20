@@ -64,5 +64,36 @@ class CRUDUser(CRUDBase):
         await session.refresh(user)
         return True
 
+    async def get_by_email(
+        self,
+        email: str,
+        session: AsyncSession
+    ) -> Optional[User]:
+        '''Получить пользователя по email'''
+        return await self.get_by_attribute('email', email, session)
+
+    async def reset_password(
+        self,
+        user: User,
+        new_password: str,
+        session: AsyncSession
+    ) -> bool:
+        '''Сбросить пароль пользователя и обновить версию токена'''
+        try:
+            # Хешируем новый пароль
+            user.hashed_password = self.password_helper.hash(new_password)
+
+            # Увеличиваем версию токена для инвалидации всех существующих
+            # токенов
+            user.token_version += 1
+
+            # Сохраняем изменения
+            await session.commit()
+            await session.refresh(user)
+            return True
+        except Exception:
+            await session.rollback()
+            return False
+
 
 user_crud = CRUDUser(User)

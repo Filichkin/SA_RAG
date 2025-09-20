@@ -146,6 +146,22 @@ class UserChangePassword(BaseModel):
         }
 
 
+class UserResetPassword(BaseModel):
+    '''Схема для сброса пароля пользователя'''
+    email: EmailStr = Field(
+        ...,
+        title='Email',
+        description='Email пользователя для сброса пароля'
+    )
+
+    class Config:
+        json_schema_extra = {
+            'example': {
+                'email': 'user@example.com'
+            }
+        }
+
+
 class UserUpdate(UserBase, schemas.BaseUserUpdate):
     email: Optional[EmailStr] = None
     first_name: Optional[str] = Field(

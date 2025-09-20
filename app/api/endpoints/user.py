@@ -13,11 +13,12 @@ from app.core.user import (
     fastapi_users,
     get_jwt_strategy
 )
+from app.api.utils import generate_password_by_pattern, email_service
 from app.crud.user import user_crud
 from app.logging import logging_config
 from app.models.user import User
 from app.schemas.user import (
-    UserCreate, UserRead, UserUpdate, UserChangePassword
+    UserCreate, UserRead, UserUpdate, UserChangePassword, UserResetPassword
 )
 
 
@@ -213,6 +214,93 @@ async def change_password(
     except Exception as e:
         user_logger.error(
             f'Ошибка при смене пароля для пользователя {current_user.id}: '
+            f'{str(e)}',
+            exc_info=True
+        )
+        raise
+
+
+@router.post(
+    Constants.RESET_PASSWORD_PREFIX,
+    summary=Descriptions.RESET_PASSWORD_SUMMARY,
+    description=Descriptions.RESET_PASSWORD_DESCRIPTION,
+    tags=Constants.USERS_TAGS
+)
+async def reset_password(
+    reset_data: UserResetPassword,
+    session: AsyncSession = Depends(get_async_session)
+):
+    '''
+    Сбросить пароль пользователя.
+    Новый пароль будет сгенерирован и отправлен на email.
+    Все активные сессии пользователя будут завершены.
+    '''
+    user_logger = logging_config.get_endpoint_logger('user')
+
+    user_logger.info(
+        f'Запрос на сброс пароля для email: {reset_data.email}'
+    )
+
+    try:
+        # Ищем пользователя по email
+        user = await user_crud.get_by_email(reset_data.email, session)
+        if not user:
+            user_logger.warning(
+                f'Попытка сброса пароля для несуществующего email: '
+                f'{reset_data.email}'
+            )
+            raise HTTPException(
+                status_code=Constants.HTTP_404_NOT_FOUND,
+                detail=Messages.EMAIL_NOT_FOUND_MSG
+            )
+
+        # Генерируем новый пароль
+        new_password = generate_password_by_pattern()
+        # Сбрасываем пароль в базе данных
+        success = await user_crud.reset_password(
+            user=user,
+            new_password=new_password,
+            session=session
+        )
+
+        if not success:
+            user_logger.error(
+                f'Ошибка сброса пароля в БД для пользователя {user.id}'
+            )
+            raise HTTPException(
+                status_code=Constants.HTTP_400_BAD_REQUEST,
+                detail=Messages.EMAIL_SEND_ERROR_MSG
+            )
+
+        # Отправляем email с новым паролем
+        email_sent = await email_service.send_password_reset_email(
+            to_email=user.email,
+            new_password=new_password,
+            user_name=f'{user.first_name} {user.last_name}'
+        )
+
+        if not email_sent:
+            user_logger.error(
+                f'Ошибка отправки email для пользователя {user.id}'
+            )
+            raise HTTPException(
+                status_code=Constants.HTTP_400_BAD_REQUEST,
+                detail=Messages.EMAIL_SEND_ERROR_MSG
+            )
+
+        user_logger.info(
+            f'Пароль успешно сброшен для пользователя {user.id} '
+            f'(email: {user.email})'
+        )
+
+        return {'message': Messages.RESET_PASSWORD_SUCCESS_MSG}
+
+    except HTTPException:
+        # Перебрасываем HTTP исключения без дополнительного логирования
+        raise
+    except Exception as e:
+        user_logger.error(
+            f'Ошибка при сбросе пароля для email {reset_data.email}: '
             f'{str(e)}',
             exc_info=True
         )

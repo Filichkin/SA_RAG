@@ -29,6 +29,7 @@ class Constants:
     GET_ALL_USERS_PREFIX = '/users'
     DELETE_USER_PREFIX = 'users/{user_id}'
     CHANGE_PASSWORD_PREFIX = '/users/change-password'
+    RESET_PASSWORD_PREFIX = '/users/reset-password'
 
 
 class Messages:
@@ -47,6 +48,9 @@ class Messages:
     USER_NOT_FOUND_MSG = 'Пользователь не найден'
     INVALID_OLD_PASSWORD_MSG = 'Неверный текущий пароль'
     PASSWORD_CHANGED_SUCCESS_MSG = 'Пароль успешно изменен'
+    RESET_PASSWORD_SUCCESS_MSG = 'Новый пароль отправлен на email'
+    EMAIL_NOT_FOUND_MSG = 'Пользователь с указанным email не найден'
+    EMAIL_SEND_ERROR_MSG = 'Ошибка отправки email'
 
 
 class Descriptions:
@@ -68,4 +72,9 @@ class Descriptions:
     CHANGE_PASSWORD_DESCRIPTION = (
         'Изменить пароль текущего пользователя. Требуется указать '
         'текущий пароль для подтверждения.'
+    )
+    RESET_PASSWORD_SUMMARY = 'Сбросить пароль'
+    RESET_PASSWORD_DESCRIPTION = (
+        'Сбросить пароль пользователя. Новый пароль будет отправлен на email. '
+        'Все активные сессии будут завершены.'
     )

@@ -21,6 +21,12 @@ class Settings(BaseSettings):
     phone_pattern: str = r'^\+7\d{10}$'
     date_pattern: str = r'^\d{4}-\d{2}-\d{2}$'
 
+    # Email settings
+    yandax_email: str
+    yandex_app_pass: str
+    smtp_host: str = 'smtp.yandex.ru'
+    smtp_port: int = 587
+
     logging_format: str = '%(asctime)s - %(levelname)s - %(message)s'
     logging_dt_format: str = '%Y-%m-%d %H:%M:%S'
 
