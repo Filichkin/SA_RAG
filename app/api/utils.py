@@ -19,7 +19,9 @@ def generate_password_by_pattern() -> str:
     # Паттерн: r'^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$'
 
     # Минимальная длина из паттерна (8 символов)
-    min_length = settings.user_password_min_len
+    # Паттерн требует минимум 8 символов, поэтому используем
+    # max(8, settings.user_password_min_len)
+    min_length = max(8, settings.user_password_min_len)
 
     # Символы для генерации
     lowercase = string.ascii_lowercase
@@ -30,31 +32,35 @@ def generate_password_by_pattern() -> str:
     # Объединяем все допустимые символы
     all_chars = lowercase + uppercase + digits + special_chars
 
-    # Генерируем пароль с гарантированным наличием всех типов символов
-    password_chars = []
+    # Максимальное количество попыток для генерации валидного пароля
+    max_attempts = 100
 
-    # Добавляем по одному символу каждого типа
-    password_chars.append(secrets.choice(lowercase))
-    password_chars.append(secrets.choice(uppercase))
-    password_chars.append(secrets.choice(digits))
-    password_chars.append(secrets.choice(special_chars))
+    for attempt in range(max_attempts):
+        # Генерируем пароль с гарантированным наличием всех типов символов
+        password_chars = []
 
-    # Заполняем остальную длину случайными символами
-    for _ in range(min_length - 4):
-        password_chars.append(secrets.choice(all_chars))
+        # Добавляем по одному символу каждого типа
+        password_chars.append(secrets.choice(lowercase))
+        password_chars.append(secrets.choice(uppercase))
+        password_chars.append(secrets.choice(digits))
+        password_chars.append(secrets.choice(special_chars))
 
-    # Перемешиваем символы
-    secrets.SystemRandom().shuffle(password_chars)
+        # Заполняем остальную длину случайными символами
+        for _ in range(min_length - 4):
+            password_chars.append(secrets.choice(all_chars))
 
-    password = ''.join(password_chars)
+        # Перемешиваем символы
+        secrets.SystemRandom().shuffle(password_chars)
 
-    # Проверяем соответствие паттерну (дополнительная проверка)
-    if not re.match(settings.password_pattern, password):
-        # Если не соответствует, возвращаем базовый пароль
-        # В крайнем случае возвращаем гарантированно валидный пароль
-        return 'Password123!'
+        password = ''.join(password_chars)
 
-    return password
+        # Проверяем соответствие паттерну
+        if re.match(settings.password_pattern, password):
+            return password
+
+    # Если не удалось сгенерировать валидный пароль за max_attempts попыток
+    # Возвращаем гарантированно валидный пароль
+    return 'Password123!'
 
 
 class EmailService:
