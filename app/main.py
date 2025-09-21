@@ -44,6 +44,58 @@ app = FastAPI(
     ```
     """,
     lifespan=lifespan,
+    # Добавляем схему безопасности для Swagger
+    openapi_tags=[
+        {
+            "name": "auth",
+            "description": "Двухфакторная аутентификация",
+        },
+        {
+            "name": "users",
+            "description": "Управление пользователями",
+        },
+    ]
 )
+
+
+# Добавляем кастомную схему безопасности для Swagger
+def custom_openapi():
+    if app.openapi_schema:
+        return app.openapi_schema
+
+    from fastapi.openapi.utils import get_openapi
+
+    openapi_schema = get_openapi(
+        title=app.title,
+        version="1.0.0",
+        description=app.description,
+        routes=app.routes,
+    )
+
+    # Добавляем схему безопасности Bearer
+    openapi_schema["components"]["securitySchemes"] = {
+        "BearerAuth": {
+            "type": "http",
+            "scheme": "bearer",
+            "bearerFormat": "JWT",
+            "description": "Введите JWT токен, полученный через 2FA"
+        }
+    }
+
+    # Применяем схему безопасности ко всем эндпоинтам кроме 2FA
+    for path in openapi_schema["paths"]:
+        for method in openapi_schema["paths"][path]:
+            if path not in ["/auth/2fa/login", "/auth/2fa/verify"]:
+                if "security" not in openapi_schema["paths"][path][method]:
+                    openapi_schema["paths"][path][method]["security"] = [
+                        {"BearerAuth": []}
+                    ]
+
+    app.openapi_schema = openapi_schema
+    return app.openapi_schema
+
+
+app.openapi = custom_openapi
+
 
 app.include_router(main_router)
