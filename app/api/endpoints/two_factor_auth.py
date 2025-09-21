@@ -149,9 +149,10 @@ async def two_factor_auth_verify(
                 detail=Messages.TWO_FA_INVALID_CREDENTIALS_MSG
             )
 
-        # Получаем данные пользователя для логирования
+        # Получаем данные пользователя для логирования и токена
         user_id = user.id
         user_email = user.email
+        user_token_version = user.token_version
 
         # Проверяем код
         two_fa_code = await two_factor_auth_crud.get_valid_code(
@@ -174,7 +175,7 @@ async def two_factor_auth_verify(
 
         # Генерируем JWT токен
         jwt_strategy = get_jwt_strategy()
-        token = await jwt_strategy.write_token(user)
+        token = jwt_strategy.write_token_with_data(user_id, user_token_version)
 
         user_logger.info(
             f'Успешный вход с 2FA для пользователя {user_id} '

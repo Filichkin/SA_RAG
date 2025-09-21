@@ -80,6 +80,19 @@ class CustomJWTStrategy(JWTStrategy):
             self.lifetime_seconds
         )
 
+    def write_token_with_data(self, user_id: int, token_version: int) -> str:
+        '''Создает токен с переданными данными пользователя'''
+        data = {
+            'sub': str(user_id),
+            'token_version': token_version,
+            'aud': self.token_audience,
+        }
+        return generate_jwt(
+            data,
+            self.secret,
+            self.lifetime_seconds
+        )
+
 
 def get_jwt_strategy() -> CustomJWTStrategy:
     return CustomJWTStrategy(
