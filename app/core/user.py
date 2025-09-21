@@ -31,9 +31,9 @@ async def get_user_db(
     yield SQLAlchemyUserDatabase(session, User)
 
 
-bearer_transport = BearerTransport(
-    tokenUrl=Constants.JWT_TOKEN_URL
-)
+# Создаем BearerTransport с фиктивным tokenUrl, так как теперь используется 2FA
+# В реальности токен получается через /auth/2fa/verify
+bearer_transport = BearerTransport(tokenUrl="auth/2fa/verify")
 
 
 class CustomJWTStrategy(JWTStrategy):
