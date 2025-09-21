@@ -2,7 +2,7 @@ import re
 import smtplib
 import string
 import secrets
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
@@ -85,7 +85,7 @@ def is_2fa_code_expired(created_at: datetime) -> bool:
         bool: True если код истек, False иначе
     """
     expiration_time = created_at + timedelta(minutes=10)
-    return datetime.utcnow() > expiration_time
+    return datetime.now(timezone.utc) > expiration_time
 
 
 class EmailService:

@@ -64,7 +64,8 @@ async def two_factor_auth_login(
                 detail=Messages.TWO_FA_INVALID_CREDENTIALS_MSG
             )
 
-        # Получаем данные пользователя для email
+        # Получаем данные пользователя для email и логирования
+        user_id = user.id
         user_name = f'{user.first_name} {user.last_name}'
         user_email = user.email
 
@@ -73,7 +74,7 @@ async def two_factor_auth_login(
 
         # Сохраняем код в базе данных
         await two_factor_auth_crud.create_code(
-            user_id=user.id,
+            user_id=user_id,
             code=code,
             session=session
         )
@@ -87,7 +88,7 @@ async def two_factor_auth_login(
 
         if not email_sent:
             user_logger.error(
-                f'Ошибка отправки 2FA кода для пользователя {user.id}'
+                f'Ошибка отправки 2FA кода для пользователя {user_id}'
             )
             raise HTTPException(
                 status_code=Constants.HTTP_400_BAD_REQUEST,
@@ -95,8 +96,8 @@ async def two_factor_auth_login(
             )
 
         user_logger.info(
-            f'2FA код отправлен пользователю {user.id} '
-            f'(email: {user.email})'
+            f'2FA код отправлен пользователю {user_id} '
+            f'(email: {user_email})'
         )
 
         return TwoFactorAuthResponse(
@@ -149,18 +150,19 @@ async def two_factor_auth_verify(
             )
 
         # Получаем данные пользователя для логирования
+        user_id = user.id
         user_email = user.email
 
         # Проверяем код
         two_fa_code = await two_factor_auth_crud.get_valid_code(
-            user_id=user.id,
+            user_id=user_id,
             code=verify_data.code,
             session=session
         )
 
         if not two_fa_code:
             user_logger.warning(
-                f'Неверный или истекший 2FA код для пользователя {user.id}'
+                f'Неверный или истекший 2FA код для пользователя {user_id}'
             )
             raise HTTPException(
                 status_code=Constants.HTTP_400_BAD_REQUEST,
@@ -175,7 +177,7 @@ async def two_factor_auth_verify(
         token = await jwt_strategy.write_token(user)
 
         user_logger.info(
-            f'Успешный вход с 2FA для пользователя {user.id} '
+            f'Успешный вход с 2FA для пользователя {user_id} '
             f'(email: {user_email})'
         )
 
