@@ -24,11 +24,12 @@ from app.schemas.user import (
 
 router = APIRouter()
 
-router.include_router(
-    fastapi_users.get_auth_router(auth_backend),
-    prefix=Constants.AUTH_PREFIX,
-    tags=Constants.AUTH_TAGS,
-)
+# Заменяем стандартный auth роутер на кастомную 2FA реализацию
+# router.include_router(
+#     fastapi_users.get_auth_router(auth_backend),
+#     prefix=Constants.AUTH_PREFIX,
+#     tags=Constants.AUTH_TAGS,
+# )
 router.include_router(
     fastapi_users.get_register_router(UserRead, UserCreate),
     prefix=Constants.REGISTER_PREFIX,

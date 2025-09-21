@@ -95,5 +95,9 @@ class CRUDUser(CRUDBase):
             await session.rollback()
             return False
 
+    def verify_password(self, password: str, hashed_password: str) -> bool:
+        '''Проверить пароль пользователя'''
+        return self.password_helper.verify(password, hashed_password)
+
 
 user_crud = CRUDUser(User)

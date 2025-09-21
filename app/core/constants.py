@@ -30,6 +30,10 @@ class Constants:
     DELETE_USER_PREFIX = 'users/{user_id}'
     CHANGE_PASSWORD_PREFIX = '/users/change-password'
     RESET_PASSWORD_PREFIX = '/users/reset-password'
+    
+    # Two-factor authentication endpoints
+    TWO_FA_LOGIN_PREFIX = '/auth/2fa/login'
+    TWO_FA_VERIFY_PREFIX = '/auth/2fa/verify'
 
 
 class Messages:
@@ -51,6 +55,13 @@ class Messages:
     RESET_PASSWORD_SUCCESS_MSG = 'Новый пароль отправлен на email'
     EMAIL_NOT_FOUND_MSG = 'Пользователь с указанным email не найден'
     EMAIL_SEND_ERROR_MSG = 'Ошибка отправки email'
+    
+    # Two-factor authentication messages
+    TWO_FA_CODE_SENT_MSG = 'Код подтверждения отправлен на email'
+    TWO_FA_CODE_INVALID_MSG = 'Неверный код подтверждения'
+    TWO_FA_CODE_EXPIRED_MSG = 'Код подтверждения истек'
+    TWO_FA_LOGIN_SUCCESS_MSG = 'Вход выполнен успешно'
+    TWO_FA_INVALID_CREDENTIALS_MSG = 'Неверный email или пароль'
 
 
 class Descriptions:
@@ -77,4 +88,14 @@ class Descriptions:
     RESET_PASSWORD_DESCRIPTION = (
         'Сбросить пароль пользователя. Новый пароль будет отправлен на email. '
         'Все активные сессии будут завершены.'
+    )
+    
+    # Two-factor authentication descriptions
+    TWO_FA_LOGIN_SUMMARY = 'Вход с двухфакторной аутентификацией'
+    TWO_FA_LOGIN_DESCRIPTION = (
+        'Первый этап входа. Проверяет email и пароль, отправляет код на email.'
+    )
+    TWO_FA_VERIFY_SUMMARY = 'Подтверждение кода двухфакторной аутентификации'
+    TWO_FA_VERIFY_DESCRIPTION = (
+        'Второй этап входа. Проверяет 6-значный код и выдает токен доступа.'
     )

@@ -2,6 +2,7 @@ import re
 import smtplib
 import string
 import secrets
+from datetime import datetime, timedelta
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
@@ -61,6 +62,30 @@ def generate_password_by_pattern() -> str:
     # Если не удалось сгенерировать валидный пароль за max_attempts попыток
     # Возвращаем гарантированно валидный пароль
     return 'Password123!'
+
+
+def generate_2fa_code() -> str:
+    """
+    Генерирует 6-значный числовой код для двухфакторной аутентификации.
+
+    Returns:
+        str: 6-значный числовой код
+    """
+    return ''.join([str(secrets.randbelow(10)) for _ in range(6)])
+
+
+def is_2fa_code_expired(created_at: datetime) -> bool:
+    """
+    Проверяет, истек ли срок действия 2FA кода.
+
+    Args:
+        created_at: Время создания кода
+
+    Returns:
+        bool: True если код истек, False иначе
+    """
+    expiration_time = created_at + timedelta(minutes=10)
+    return datetime.utcnow() > expiration_time
 
 
 class EmailService:
@@ -129,6 +154,62 @@ class EmailService:
         except Exception as e:
             # В продакшене использовать логирование
             print(f'Ошибка отправки email: {e}')
+            return False
+
+    async def send_2fa_code_email(
+        self,
+        to_email: str,
+        code: str,
+        user_name: str
+    ) -> bool:
+        """
+        Отправляет email с кодом двухфакторной аутентификации.
+
+        Args:
+            to_email: Email получателя
+            code: 6-значный код
+            user_name: Имя пользователя
+
+        Returns:
+            bool: True если email отправлен успешно, False иначе
+        """
+        try:
+            # Создаем сообщение
+            msg = MIMEMultipart()
+            msg['From'] = self.email
+            msg['To'] = to_email
+            msg['Subject'] = 'Код подтверждения - SA_RAG Agent'
+
+            # Создаем тело письма
+            body = f'''
+Добро пожаловать, {user_name}!
+
+Ваш код подтверждения для входа в систему:
+
+{code}
+
+ВАЖНО:
+- Код действителен в течение 10 минут
+- Не передавайте этот код третьим лицам
+- Если вы не запрашивали вход в систему, проигнорируйте это письмо
+
+С уважением,
+Команда SA_RAG Agent
+'''
+
+            msg.attach(MIMEText(body, 'plain', 'utf-8'))
+
+            # Подключаемся к серверу и отправляем
+            with smtplib.SMTP(self.smtp_host, self.smtp_port) as server:
+                server.starttls()
+                server.login(self.email, self.password)
+                server.send_message(msg)
+
+            return True
+
+        except Exception as e:
+            # В продакшене использовать логирование
+            print(f'Ошибка отправки 2FA email: {e}')
             return False
 
     async def send_email(
