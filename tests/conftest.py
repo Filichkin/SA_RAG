@@ -77,7 +77,7 @@ async def client(db_session: AsyncSession) -> AsyncGenerator[
 async def test_user(db_session: AsyncSession) -> User:
     '''Создание тестового пользователя'''
     from fastapi_users_db_sqlalchemy import SQLAlchemyUserDatabase
-    
+
     user_db = SQLAlchemyUserDatabase(db_session, User)
     async for user_manager in get_user_manager(user_db):
         user_create = UserCreate(
@@ -97,7 +97,7 @@ async def test_user(db_session: AsyncSession) -> User:
 async def test_admin_user(db_session: AsyncSession) -> User:
     '''Создание тестового администратора'''
     from fastapi_users_db_sqlalchemy import SQLAlchemyUserDatabase
-    
+
     user_db = SQLAlchemyUserDatabase(db_session, User)
     async for user_manager in get_user_manager(user_db):
         user_create = UserCreate(
@@ -121,7 +121,7 @@ async def test_admin_user(db_session: AsyncSession) -> User:
 async def test_superuser(db_session: AsyncSession) -> User:
     '''Создание тестового суперпользователя'''
     from fastapi_users_db_sqlalchemy import SQLAlchemyUserDatabase
-    
+
     user_db = SQLAlchemyUserDatabase(db_session, User)
     async for user_manager in get_user_manager(user_db):
         user_create = UserCreate(
@@ -147,12 +147,13 @@ async def auth_headers(
 ) -> dict:
     '''Получение заголовков авторизации для тестового пользователя'''
     from unittest.mock import patch, AsyncMock
-    
+
     # Мокаем отправку email
     with patch('app.api.endpoints.two_factor_auth.email_service.'
-               'send_2fa_code_email', new_callable=AsyncMock) as mock_send_email:
+               'send_2fa_code_email',
+               new_callable=AsyncMock) as mock_send_email:
         mock_send_email.return_value = True
-        
+
         # Первый этап 2FA
         login_response = await client.post('/auth/2fa/login', json={
             'email': test_user.email,
@@ -160,7 +161,7 @@ async def auth_headers(
         })
         assert login_response.status_code == 200
         temp_token = login_response.json()['temp_token']
-        
+
         # Получаем код из базы данных
         from app.crud.two_factor_auth import two_factor_auth_crud
         codes = await two_factor_auth_crud.get_user_codes(
@@ -169,7 +170,7 @@ async def auth_headers(
         )
         assert len(codes) > 0
         code = codes[0].code
-        
+
         # Второй этап 2FA
         verify_response = await client.post(
             '/auth/2fa/verify-code',
@@ -187,12 +188,13 @@ async def admin_auth_headers(
 ) -> dict:
     '''Получение заголовков авторизации для администратора'''
     from unittest.mock import patch, AsyncMock
-    
+
     # Мокаем отправку email
     with patch('app.api.endpoints.two_factor_auth.email_service.'
-               'send_2fa_code_email', new_callable=AsyncMock) as mock_send_email:
+               'send_2fa_code_email',
+               new_callable=AsyncMock) as mock_send_email:
         mock_send_email.return_value = True
-        
+
         # Первый этап 2FA
         login_response = await client.post('/auth/2fa/login', json={
             'email': test_admin_user.email,
@@ -200,7 +202,7 @@ async def admin_auth_headers(
         })
         assert login_response.status_code == 200
         temp_token = login_response.json()['temp_token']
-        
+
         # Получаем код из базы данных
         from app.crud.two_factor_auth import two_factor_auth_crud
         codes = await two_factor_auth_crud.get_user_codes(
@@ -209,7 +211,7 @@ async def admin_auth_headers(
         )
         assert len(codes) > 0
         code = codes[0].code
-        
+
         # Второй этап 2FA
         verify_response = await client.post(
             '/auth/2fa/verify-code',
@@ -227,12 +229,13 @@ async def superuser_auth_headers(
 ) -> dict:
     '''Получение заголовков авторизации для суперпользователя'''
     from unittest.mock import patch, AsyncMock
-    
+
     # Мокаем отправку email
     with patch('app.api.endpoints.two_factor_auth.email_service.'
-               'send_2fa_code_email', new_callable=AsyncMock) as mock_send_email:
+               'send_2fa_code_email',
+               new_callable=AsyncMock) as mock_send_email:
         mock_send_email.return_value = True
-        
+
         # Первый этап 2FA
         login_response = await client.post('/auth/2fa/login', json={
             'email': test_superuser.email,
@@ -240,7 +243,7 @@ async def superuser_auth_headers(
         })
         assert login_response.status_code == 200
         temp_token = login_response.json()['temp_token']
-        
+
         # Получаем код из базы данных
         from app.crud.two_factor_auth import two_factor_auth_crud
         codes = await two_factor_auth_crud.get_user_codes(
@@ -249,7 +252,7 @@ async def superuser_auth_headers(
         )
         assert len(codes) > 0
         code = codes[0].code
-        
+
         # Второй этап 2FA
         verify_response = await client.post(
             '/auth/2fa/verify-code',

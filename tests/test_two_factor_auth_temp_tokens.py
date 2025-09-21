@@ -29,8 +29,8 @@ class TestTwoFactorAuthTempTokens:
             mock_send_email.return_value = True
 
             login_data = {
-            'email': test_user.email,
-            'password': 'TestPass123!'
+                'email': test_user.email,
+                'password': 'TestPass123!'
             }
 
             response = await client.post('/auth/2fa/login', json=login_data)
@@ -193,7 +193,7 @@ class TestTwoFactorAuthTempTokens:
             from app.core.config import settings
 
             expired_payload = {
-                'sub': str(test_user['id']),
+                'sub': str(test_user.id),
                 'type': 'temp_2fa',
                 'aud': ['fastapi-users:auth'],
                 'exp': 0  # Истекший токен
@@ -227,8 +227,8 @@ class TestTwoFactorAuthTempTokens:
 
             # 1. Первый этап - получение временного токена
             login_data = {
-            'email': test_user.email,
-            'password': 'TestPass123!'
+                'email': test_user.email,
+                'password': 'TestPass123!'
             }
 
             login_response = await client.post(

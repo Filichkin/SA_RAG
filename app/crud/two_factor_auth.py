@@ -91,6 +91,27 @@ class TwoFactorAuthCRUD:
         two_fa_code.is_used = True
         await session.commit()
 
+    async def get_user_codes(
+        self,
+        user_id: int,
+        session: AsyncSession
+    ) -> list[TwoFactorAuthCode]:
+        """
+        Получает все коды пользователя.
+
+        Args:
+            user_id: ID пользователя
+            session: Сессия базы данных
+
+        Returns:
+            list[TwoFactorAuthCode]: Список кодов пользователя
+        """
+        stmt = select(TwoFactorAuthCode).where(
+            TwoFactorAuthCode.user_id == user_id
+        ).order_by(TwoFactorAuthCode.created_at.desc())
+        result = await session.execute(stmt)
+        return result.scalars().all()
+
     async def delete_user_codes(
         self,
         user_id: int,

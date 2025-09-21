@@ -85,6 +85,9 @@ def is_2fa_code_expired(created_at: datetime) -> bool:
     Returns:
         bool: True если код истек, False иначе
     """
+    # Убеждаемся что created_at имеет timezone
+    if created_at.tzinfo is None:
+        created_at = created_at.replace(tzinfo=timezone.utc)
     expiration_time = created_at + timedelta(
         minutes=settings.two_factor_auth_code_lifetime
         )

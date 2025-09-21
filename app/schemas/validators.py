@@ -9,6 +9,8 @@ def validate_password_strength(password: str) -> str:
         raise ValueError('Пароль обязателен')
 
     password = password.strip()
+    if not password:
+        raise ValueError('Пароль обязателен')
     if len(password) < settings.user_password_min_len:
         raise ValueError(
             f'Пароль должен содержать минимум '
