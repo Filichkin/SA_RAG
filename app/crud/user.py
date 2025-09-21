@@ -97,7 +97,9 @@ class CRUDUser(CRUDBase):
 
     def verify_password(self, password: str, hashed_password: str) -> bool:
         '''Проверить пароль пользователя'''
-        return self.password_helper.verify(password, hashed_password)
+        return self.password_helper.verify_and_update(
+            password, hashed_password
+        )[0]
 
 
 user_crud = CRUDUser(User)
