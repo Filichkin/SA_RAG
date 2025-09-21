@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     secret: str = 'SECRET'
     first_superuser_email: Optional[EmailStr] = None
     first_superuser_password: Optional[str] = None
+    two_factor_auth_code_lifetime: int = 10
     jwt_token_lifetime: int = 3600
     user_password_min_len: int = 8
     user_password_max_len: int = 128

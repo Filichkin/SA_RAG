@@ -93,6 +93,38 @@ class CustomJWTStrategy(JWTStrategy):
             self.lifetime_seconds
         )
 
+    def write_temp_token(self, user_id: int) -> str:
+        '''Создает временный токен для 2FA (короткий срок жизни)'''
+        data = {
+            'sub': str(user_id),
+            'type': 'temp_2fa',
+            'aud': self.token_audience,
+        }
+        # Временный токен живет 10 минут
+        return generate_jwt(
+            data,
+            self.secret,
+            600  # 10 минут в секундах
+        )
+
+    async def read_temp_token(self, token: str) -> Optional[int]:
+        '''Читает временный токен и возвращает user_id'''
+        try:
+            payload = jwt.decode(
+                token,
+                self.secret,
+                algorithms=['HS256'],
+                audience=self.token_audience
+            )
+
+            # Проверяем, что это временный токен для 2FA
+            if payload.get('type') != 'temp_2fa':
+                return None
+
+            return int(payload.get('sub'))
+        except jwt.InvalidTokenError:
+            return None
+
 
 def get_jwt_strategy() -> CustomJWTStrategy:
     return CustomJWTStrategy(

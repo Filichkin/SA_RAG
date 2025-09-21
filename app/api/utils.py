@@ -1,10 +1,11 @@
+from datetime import datetime, timedelta, timezone
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 import re
 import smtplib
 import string
 import secrets
-from datetime import datetime, timedelta, timezone
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
+
 
 from app.core.config import settings
 
@@ -84,7 +85,9 @@ def is_2fa_code_expired(created_at: datetime) -> bool:
     Returns:
         bool: True если код истек, False иначе
     """
-    expiration_time = created_at + timedelta(minutes=10)
+    expiration_time = created_at + timedelta(
+        minutes=settings.two_factor_auth_code_lifetime
+        )
     return datetime.now(timezone.utc) > expiration_time
 
 

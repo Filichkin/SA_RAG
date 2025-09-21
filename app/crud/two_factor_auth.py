@@ -4,8 +4,8 @@ from typing import Optional
 from sqlalchemy import select, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.two_factor_auth import TwoFactorAuthCode
 from app.api.utils import is_2fa_code_expired
+from app.models.two_factor_auth import TwoFactorAuthCode
 
 
 class TwoFactorAuthCRUD:

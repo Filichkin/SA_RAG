@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Header
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.utils import generate_2fa_code, email_service
@@ -11,6 +11,7 @@ from app.logging import logging_config
 from app.schemas.two_factor_auth import (
     TwoFactorAuthRequest,
     TwoFactorAuthVerify,
+    TwoFactorAuthVerifyCode,
     TwoFactorAuthResponse,
     TwoFactorAuthTokenResponse
 )
@@ -95,13 +96,18 @@ async def two_factor_auth_login(
                 detail=Messages.EMAIL_SEND_ERROR_MSG
             )
 
+        # Генерируем временный токен для второго этапа
+        jwt_strategy = get_jwt_strategy()
+        temp_token = jwt_strategy.write_temp_token(user_id)
+
         user_logger.info(
             f'2FA код отправлен пользователю {user_id} '
             f'(email: {user_email})'
         )
 
         return TwoFactorAuthResponse(
-            message=Messages.TWO_FA_CODE_SENT_MSG
+            message=Messages.TWO_FA_CODE_SENT_MSG,
+            temp_token=temp_token
         )
 
     except HTTPException:
@@ -194,6 +200,97 @@ async def two_factor_auth_verify(
         user_logger.error(
             f'Ошибка при проверке 2FA кода для email {verify_data.email}: '
             f'{str(e)}',
+            exc_info=True
+        )
+        raise
+
+
+@router.post(
+    Constants.TWO_FA_VERIFY_CODE_PREFIX,
+    response_model=TwoFactorAuthTokenResponse,
+    summary='Проверка 2FA кода с временным токеном',
+    description='Второй этап входа с двухфакторной аутентификацией. '
+                'Проверяет 6-значный код используя временный токен.',
+    tags=Constants.AUTH_TAGS
+)
+async def two_factor_auth_verify_code(
+    verify_data: TwoFactorAuthVerifyCode,
+    temp_token: str = Header(..., alias='X-Temp-Token'),
+    session: AsyncSession = Depends(get_async_session)
+):
+    '''
+    Второй этап входа с двухфакторной аутентификацией.
+    Проверяет 6-значный код используя временный токен.
+    '''
+    user_logger = logging_config.get_endpoint_logger('two_factor_auth')
+
+    user_logger.info('Запрос на проверку 2FA кода с временным токеном')
+
+    try:
+        # Валидируем временный токен
+        jwt_strategy = get_jwt_strategy()
+        user_id = await jwt_strategy.read_temp_token(temp_token)
+
+        if not user_id:
+            user_logger.warning(
+                'Недействительный или истекший временный токен'
+            )
+            raise HTTPException(
+                status_code=Constants.HTTP_401_UNAUTHORIZED,
+                detail='Недействительный или истекший временный токен'
+            )
+
+        # Ищем пользователя по ID
+        user = await user_crud.get(user_id, session)
+        if not user:
+            user_logger.warning(f'Пользователь с ID {user_id} не найден')
+            raise HTTPException(
+                status_code=Constants.HTTP_404_NOT_FOUND,
+                detail=Messages.TWO_FA_INVALID_CREDENTIALS_MSG
+            )
+
+        # Получаем данные пользователя для логирования и токена
+        user_email = user.email
+        user_token_version = user.token_version
+
+        # Проверяем код
+        two_fa_code = await two_factor_auth_crud.get_valid_code(
+            user_id=user_id,
+            code=verify_data.code,
+            session=session
+        )
+
+        if not two_fa_code:
+            user_logger.warning(
+                f'Неверный или истекший 2FA код для пользователя {user_id}'
+            )
+            raise HTTPException(
+                status_code=Constants.HTTP_400_BAD_REQUEST,
+                detail=Messages.TWO_FA_CODE_INVALID_MSG
+            )
+
+        # Помечаем код как использованный
+        await two_factor_auth_crud.mark_code_as_used(two_fa_code, session)
+
+        # Генерируем JWT токен
+        token = jwt_strategy.write_token_with_data(user_id, user_token_version)
+
+        user_logger.info(
+            f'Успешный вход с 2FA для пользователя {user_id} '
+            f'(email: {user_email})'
+        )
+
+        return TwoFactorAuthTokenResponse(
+            access_token=token,
+            token_type='bearer'
+        )
+
+    except HTTPException:
+        # Перебрасываем HTTP исключения без дополнительного логирования
+        raise
+    except Exception as e:
+        user_logger.error(
+            f'Ошибка при проверке 2FA кода с временным токеном: {str(e)}',
             exc_info=True
         )
         raise
