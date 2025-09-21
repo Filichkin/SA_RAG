@@ -64,6 +64,10 @@ async def two_factor_auth_login(
                 detail=Messages.TWO_FA_INVALID_CREDENTIALS_MSG
             )
 
+        # Получаем данные пользователя для email
+        user_name = f'{user.first_name} {user.last_name}'
+        user_email = user.email
+
         # Генерируем 6-значный код
         code = generate_2fa_code()
 
@@ -75,9 +79,8 @@ async def two_factor_auth_login(
         )
 
         # Отправляем код на email
-        user_name = f'{user.first_name} {user.last_name}'
         email_sent = await email_service.send_2fa_code_email(
-            to_email=user.email,
+            to_email=user_email,
             code=code,
             user_name=user_name
         )
@@ -145,6 +148,9 @@ async def two_factor_auth_verify(
                 detail=Messages.TWO_FA_INVALID_CREDENTIALS_MSG
             )
 
+        # Получаем данные пользователя для логирования
+        user_email = user.email
+
         # Проверяем код
         two_fa_code = await two_factor_auth_crud.get_valid_code(
             user_id=user.id,
@@ -170,7 +176,7 @@ async def two_factor_auth_verify(
 
         user_logger.info(
             f'Успешный вход с 2FA для пользователя {user.id} '
-            f'(email: {user.email})'
+            f'(email: {user_email})'
         )
 
         return TwoFactorAuthTokenResponse(
