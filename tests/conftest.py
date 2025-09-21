@@ -67,118 +67,195 @@ async def client(db_session: AsyncSession) -> AsyncGenerator[
     AsyncClient, None
 ]:
     '''Создание тестового клиента'''
-    async with AsyncClient(app=app, base_url='http://test') as ac:
+    from httpx import ASGITransport
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url='http://test') as ac:
         yield ac
 
 
 @pytest_asyncio.fixture
 async def test_user(db_session: AsyncSession) -> User:
     '''Создание тестового пользователя'''
-    user_manager = get_user_manager()
+    from fastapi_users_db_sqlalchemy import SQLAlchemyUserDatabase
+    
+    user_db = SQLAlchemyUserDatabase(db_session, User)
+    async for user_manager in get_user_manager(user_db):
+        user_create = UserCreate(
+            email='test@example.com',
+            password='TestPass123!',
+            first_name='Test',
+            last_name='User',
+            date_of_birth=None,
+            phone='+79031234567'
+        )
 
-    user_create = UserCreate(
-        email='test@example.com',
-        password='TestPass123!',
-        first_name='Test',
-        last_name='User',
-        date_of_birth=None,
-        phone='+79031234567'
-    )
-
-    user = await user_manager.create(user_create, db_session)
-    return user
+        user = await user_manager.create(user_create)
+        return user
 
 
 @pytest_asyncio.fixture
 async def test_admin_user(db_session: AsyncSession) -> User:
     '''Создание тестового администратора'''
-    user_manager = get_user_manager()
+    from fastapi_users_db_sqlalchemy import SQLAlchemyUserDatabase
+    
+    user_db = SQLAlchemyUserDatabase(db_session, User)
+    async for user_manager in get_user_manager(user_db):
+        user_create = UserCreate(
+            email='admin@example.com',
+            password='AdminPass123!',
+            first_name='Admin',
+            last_name='User',
+            date_of_birth=None,
+            phone='+79031234568'
+        )
 
-    user_create = UserCreate(
-        email='admin@example.com',
-        password='AdminPass123!',
-        first_name='Admin',
-        last_name='User',
-        date_of_birth=None,
-        phone='+79031234568'
-    )
-
-    user = await user_manager.create(user_create, db_session)
-    # Устанавливаем роль администратора
-    user.is_administrator = True
-    await db_session.commit()
-    await db_session.refresh(user)
-    return user
+        user = await user_manager.create(user_create)
+        # Устанавливаем роль администратора
+        user.is_administrator = True
+        await db_session.commit()
+        await db_session.refresh(user)
+        return user
 
 
 @pytest_asyncio.fixture
 async def test_superuser(db_session: AsyncSession) -> User:
     '''Создание тестового суперпользователя'''
-    user_manager = get_user_manager()
+    from fastapi_users_db_sqlalchemy import SQLAlchemyUserDatabase
+    
+    user_db = SQLAlchemyUserDatabase(db_session, User)
+    async for user_manager in get_user_manager(user_db):
+        user_create = UserCreate(
+            email='superuser@example.com',
+            password='SuperPass123!',
+            first_name='Super',
+            last_name='User',
+            date_of_birth=None,
+            phone='+79031234569'
+        )
 
-    user_create = UserCreate(
-        email='superuser@example.com',
-        password='SuperPass123!',
-        first_name='Super',
-        last_name='User',
-        date_of_birth=None,
-        phone='+79031234569'
-    )
-
-    user = await user_manager.create(user_create, db_session)
-    # Устанавливаем роль суперпользователя
-    user.is_superuser = True
-    await db_session.commit()
-    await db_session.refresh(user)
-    return user
+        user = await user_manager.create(user_create)
+        # Устанавливаем роль суперпользователя
+        user.is_superuser = True
+        await db_session.commit()
+        await db_session.refresh(user)
+        return user
 
 
 @pytest_asyncio.fixture
 async def auth_headers(
-    client: AsyncClient, test_user: User
+    client: AsyncClient, test_user: User, db_session: AsyncSession
 ) -> dict:
     '''Получение заголовков авторизации для тестового пользователя'''
-    response = await client.post(
-        '/auth/jwt/login',
-        data={
-            'username': test_user.email,
+    from unittest.mock import patch, AsyncMock
+    
+    # Мокаем отправку email
+    with patch('app.api.endpoints.two_factor_auth.email_service.'
+               'send_2fa_code_email', new_callable=AsyncMock) as mock_send_email:
+        mock_send_email.return_value = True
+        
+        # Первый этап 2FA
+        login_response = await client.post('/auth/2fa/login', json={
+            'email': test_user.email,
             'password': 'TestPass123!'
-        }
-    )
-    assert response.status_code == 200
-    token = response.json()['access_token']
-    return {'Authorization': f'Bearer {token}'}
+        })
+        assert login_response.status_code == 200
+        temp_token = login_response.json()['temp_token']
+        
+        # Получаем код из базы данных
+        from app.crud.two_factor_auth import two_factor_auth_crud
+        codes = await two_factor_auth_crud.get_user_codes(
+            user_id=test_user.id,
+            session=db_session
+        )
+        assert len(codes) > 0
+        code = codes[0].code
+        
+        # Второй этап 2FA
+        verify_response = await client.post(
+            '/auth/2fa/verify-code',
+            json={'code': code},
+            headers={'X-Temp-Token': temp_token}
+        )
+        assert verify_response.status_code == 200
+        token = verify_response.json()['access_token']
+        return {'Authorization': f'Bearer {token}'}
 
 
 @pytest_asyncio.fixture
 async def admin_auth_headers(
-    client: AsyncClient, test_admin_user: User
+    client: AsyncClient, test_admin_user: User, db_session: AsyncSession
 ) -> dict:
     '''Получение заголовков авторизации для администратора'''
-    response = await client.post(
-        '/auth/jwt/login',
-        data={
-            'username': test_admin_user.email,
+    from unittest.mock import patch, AsyncMock
+    
+    # Мокаем отправку email
+    with patch('app.api.endpoints.two_factor_auth.email_service.'
+               'send_2fa_code_email', new_callable=AsyncMock) as mock_send_email:
+        mock_send_email.return_value = True
+        
+        # Первый этап 2FA
+        login_response = await client.post('/auth/2fa/login', json={
+            'email': test_admin_user.email,
             'password': 'AdminPass123!'
-        }
-    )
-    assert response.status_code == 200
-    token = response.json()['access_token']
-    return {'Authorization': f'Bearer {token}'}
+        })
+        assert login_response.status_code == 200
+        temp_token = login_response.json()['temp_token']
+        
+        # Получаем код из базы данных
+        from app.crud.two_factor_auth import two_factor_auth_crud
+        codes = await two_factor_auth_crud.get_user_codes(
+            user_id=test_admin_user.id,
+            session=db_session
+        )
+        assert len(codes) > 0
+        code = codes[0].code
+        
+        # Второй этап 2FA
+        verify_response = await client.post(
+            '/auth/2fa/verify-code',
+            json={'code': code},
+            headers={'X-Temp-Token': temp_token}
+        )
+        assert verify_response.status_code == 200
+        token = verify_response.json()['access_token']
+        return {'Authorization': f'Bearer {token}'}
 
 
 @pytest_asyncio.fixture
 async def superuser_auth_headers(
-    client: AsyncClient, test_superuser: User
+    client: AsyncClient, test_superuser: User, db_session: AsyncSession
 ) -> dict:
     '''Получение заголовков авторизации для суперпользователя'''
-    response = await client.post(
-        '/auth/jwt/login',
-        data={
-            'username': test_superuser.email,
+    from unittest.mock import patch, AsyncMock
+    
+    # Мокаем отправку email
+    with patch('app.api.endpoints.two_factor_auth.email_service.'
+               'send_2fa_code_email', new_callable=AsyncMock) as mock_send_email:
+        mock_send_email.return_value = True
+        
+        # Первый этап 2FA
+        login_response = await client.post('/auth/2fa/login', json={
+            'email': test_superuser.email,
             'password': 'SuperPass123!'
-        }
-    )
-    assert response.status_code == 200
-    token = response.json()['access_token']
-    return {'Authorization': f'Bearer {token}'}
+        })
+        assert login_response.status_code == 200
+        temp_token = login_response.json()['temp_token']
+        
+        # Получаем код из базы данных
+        from app.crud.two_factor_auth import two_factor_auth_crud
+        codes = await two_factor_auth_crud.get_user_codes(
+            user_id=test_superuser.id,
+            session=db_session
+        )
+        assert len(codes) > 0
+        code = codes[0].code
+        
+        # Второй этап 2FA
+        verify_response = await client.post(
+            '/auth/2fa/verify-code',
+            json={'code': code},
+            headers={'X-Temp-Token': temp_token}
+        )
+        assert verify_response.status_code == 200
+        token = verify_response.json()['access_token']
+        return {'Authorization': f'Bearer {token}'}

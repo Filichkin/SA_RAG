@@ -1,22 +1,25 @@
 '''
 Тесты для двухфакторной аутентификации с временными токенами
 '''
+import pytest
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 from unittest.mock import patch, AsyncMock
 
 from app.core.user import get_jwt_strategy
 from app.crud.two_factor_auth import two_factor_auth_crud
+from app.models.user import User
 
 
 class TestTwoFactorAuthTempTokens:
     '''Тесты для временных токенов в 2FA'''
 
+    @pytest.mark.asyncio
     async def test_two_factor_auth_login_returns_temp_token(
         self,
         client: AsyncClient,
         db_session: AsyncSession,
-        test_user: dict
+        test_user: User
     ):
         '''Тест что two_factor_auth_login возвращает временный токен'''
         # Мокаем отправку email
@@ -26,8 +29,8 @@ class TestTwoFactorAuthTempTokens:
             mock_send_email.return_value = True
 
             login_data = {
-                'email': test_user['email'],
-                'password': test_user['password']
+            'email': test_user.email,
+            'password': 'TestPass123!'
             }
 
             response = await client.post('/auth/2fa/login', json=login_data)
@@ -41,40 +44,42 @@ class TestTwoFactorAuthTempTokens:
             assert data['temp_token'] is not None
             assert len(data['temp_token']) > 0
 
+    @pytest.mark.asyncio
     async def test_temp_token_validation(
         self,
         client: AsyncClient,
         db_session: AsyncSession,
-        test_user: dict
+        test_user: User
     ):
         '''Тест валидации временного токена'''
         # Создаем временный токен
         jwt_strategy = get_jwt_strategy()
-        temp_token = jwt_strategy.write_temp_token(test_user['id'])
+        temp_token = jwt_strategy.write_temp_token(test_user.id)
 
         # Проверяем что токен валиден
         user_id = await jwt_strategy.read_temp_token(temp_token)
-        assert user_id == test_user['id']
+        assert user_id == test_user.id
 
         # Проверяем что невалидный токен возвращает None
         invalid_user_id = await jwt_strategy.read_temp_token('invalid_token')
         assert invalid_user_id is None
 
+    @pytest.mark.asyncio
     async def test_two_factor_auth_verify_code_with_temp_token(
         self,
         client: AsyncClient,
         db_session: AsyncSession,
-        test_user: dict
+        test_user: User
     ):
         '''Тест проверки кода с временным токеном'''
         # Создаем временный токен
         jwt_strategy = get_jwt_strategy()
-        temp_token = jwt_strategy.write_temp_token(test_user['id'])
+        temp_token = jwt_strategy.write_temp_token(test_user.id)
 
         # Создаем 2FA код в базе данных
         test_code = '123456'
         await two_factor_auth_crud.create_code(
-            user_id=test_user['id'],
+            user_id=test_user.id,
             code=test_code,
             session=db_session
         )
@@ -98,6 +103,7 @@ class TestTwoFactorAuthTempTokens:
         assert data['token_type'] == 'bearer'
         assert len(data['access_token']) > 0
 
+    @pytest.mark.asyncio
     async def test_two_factor_auth_verify_code_invalid_temp_token(
         self,
         client: AsyncClient,
@@ -119,6 +125,7 @@ class TestTwoFactorAuthTempTokens:
         assert ('недействительный' in data['detail'].lower() or
                 'invalid' in data['detail'].lower())
 
+    @pytest.mark.asyncio
     async def test_two_factor_auth_verify_code_missing_temp_token(
         self,
         client: AsyncClient,
@@ -134,21 +141,22 @@ class TestTwoFactorAuthTempTokens:
 
         assert response.status_code == 422  # Validation error
 
+    @pytest.mark.asyncio
     async def test_two_factor_auth_verify_code_invalid_code(
         self,
         client: AsyncClient,
         db_session: AsyncSession,
-        test_user: dict
+        test_user: User
     ):
         '''Тест проверки кода с неверным кодом'''
         # Создаем временный токен
         jwt_strategy = get_jwt_strategy()
-        temp_token = jwt_strategy.write_temp_token(test_user['id'])
+        temp_token = jwt_strategy.write_temp_token(test_user.id)
 
         # Создаем 2FA код в базе данных
         test_code = '123456'
         await two_factor_auth_crud.create_code(
-            user_id=test_user['id'],
+            user_id=test_user.id,
             code=test_code,
             session=db_session
         )
@@ -167,11 +175,12 @@ class TestTwoFactorAuthTempTokens:
         data = response.json()
         assert 'detail' in data
 
+    @pytest.mark.asyncio
     async def test_temp_token_expiration(
         self,
         client: AsyncClient,
         db_session: AsyncSession,
-        test_user: dict
+        test_user: User
     ):
         '''Тест истечения срока действия временного токена'''
         # Создаем временный токен с очень коротким сроком жизни
@@ -202,11 +211,12 @@ class TestTwoFactorAuthTempTokens:
             user_id = await jwt_strategy.read_temp_token(expired_token)
             assert user_id is None
 
+    @pytest.mark.asyncio
     async def test_complete_2fa_workflow_with_temp_token(
         self,
         client: AsyncClient,
         db_session: AsyncSession,
-        test_user: dict
+        test_user: User
     ):
         '''Тест полного workflow 2FA с временным токеном'''
         # Мокаем отправку email
@@ -217,11 +227,14 @@ class TestTwoFactorAuthTempTokens:
 
             # 1. Первый этап - получение временного токена
             login_data = {
-                'email': test_user['email'],
-                'password': test_user['password']
+            'email': test_user.email,
+            'password': 'TestPass123!'
             }
 
-            login_response = await client.post('/auth/2fa/login', json=login_data)
+            login_response = await client.post(
+                '/auth/2fa/login',
+                json=login_data
+                )
             assert login_response.status_code == 200
 
             login_data = login_response.json()
@@ -229,7 +242,7 @@ class TestTwoFactorAuthTempTokens:
 
             # 2. Получаем код из базы данных (в реальности приходит на email)
             codes = await two_factor_auth_crud.get_user_codes(
-                user_id=test_user['id'],
+                user_id=test_user.id,
                 session=db_session
             )
             assert len(codes) > 0
@@ -256,5 +269,5 @@ class TestTwoFactorAuthTempTokens:
             assert me_response.status_code == 200
 
             me_data = me_response.json()
-            assert me_data['id'] == test_user['id']
-            assert me_data['email'] == test_user['email']
+            assert me_data['id'] == test_user.id
+            assert me_data['email'] == test_user.email
