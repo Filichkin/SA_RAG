@@ -26,35 +26,6 @@ class TwoFactorAuthRequest(BaseModel):
         }
 
 
-class TwoFactorAuthVerify(BaseModel):
-    """Схема для проверки кода двухфакторной аутентификации"""
-    email: str = Field(
-        ...,
-        title='Email',
-        description='Email пользователя'
-    )
-    code: str = Field(
-        ...,
-        title='Code',
-        description='6-значный код подтверждения',
-        min_length=Constants.TWO_FA_CODE_LEN,
-        max_length=Constants.TWO_FA_CODE_LEN
-    )
-
-    @field_validator('code')
-    @classmethod
-    def validate_code(cls, code: str) -> str:
-        return validate_code_type(code)
-
-    class Config:
-        json_schema_extra = {
-            'example': {
-                'email': 'filichkin_a@mail.ru',
-                'code': '123456'
-            }
-        }
-
-
 class TwoFactorAuthResponse(BaseModel):
     """Схема ответа для двухфакторной аутентификации"""
     message: str = Field(
@@ -118,5 +89,21 @@ class TwoFactorAuthTokenResponse(BaseModel):
             'example': {
                 'access_token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
                 'token_type': 'bearer'
+            }
+        }
+
+
+class LogoutResponse(BaseModel):
+    """Схема ответа для logout"""
+    message: str = Field(
+        ...,
+        title='Message',
+        description='Сообщение о результате операции'
+    )
+
+    class Config:
+        json_schema_extra = {
+            'example': {
+                'message': 'Выход выполнен успешно'
             }
         }

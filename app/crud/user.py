@@ -101,5 +101,28 @@ class CRUDUser(CRUDBase):
             password, hashed_password
         )[0]
 
+    async def invalidate_user_token(
+        self,
+        user_id: int,
+        session: AsyncSession
+    ) -> bool:
+        '''Инвалидировать токен пользователя (увеличить версию токена)'''
+        try:
+            user = await self.get(user_id, session)
+            if not user:
+                return False
+
+            # Увеличиваем версию токена для инвалидации всех существующих
+            # токенов
+            user.token_version += 1
+
+            # Сохраняем изменения
+            await session.commit()
+            await session.refresh(user)
+            return True
+        except Exception:
+            await session.rollback()
+            return False
+
 
 user_crud = CRUDUser(User)

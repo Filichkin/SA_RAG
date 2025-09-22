@@ -6,7 +6,6 @@ from pydantic import ValidationError
 
 from app.schemas.two_factor_auth import (
     TwoFactorAuthRequest,
-    TwoFactorAuthVerify,
     TwoFactorAuthVerifyCode,
     TwoFactorAuthResponse,
     TwoFactorAuthTokenResponse
@@ -38,37 +37,6 @@ class TestTwoFactorAuthSchemas:
         schema = TwoFactorAuthRequest(**data)
         assert schema.email == 'invalid-email'
         assert schema.password == 'ValidPass123!'
-
-    def test_two_factor_auth_verify_valid(self):
-        '''Тест валидной схемы TwoFactorAuthVerify'''
-        data = {
-            'email': 'test@example.com',
-            'code': '123456'
-        }
-
-        schema = TwoFactorAuthVerify(**data)
-        assert schema.email == 'test@example.com'
-        assert schema.code == '123456'
-
-    def test_two_factor_auth_verify_invalid_code_length(self):
-        '''Тест невалидной длины кода в TwoFactorAuthVerify'''
-        data = {
-            'email': 'test@example.com',
-            'code': '12345'  # 5 цифр вместо 6
-        }
-
-        with pytest.raises(ValidationError):
-            TwoFactorAuthVerify(**data)
-
-    def test_two_factor_auth_verify_invalid_code_format(self):
-        '''Тест невалидного формата кода в TwoFactorAuthVerify'''
-        data = {
-            'email': 'test@example.com',
-            'code': '12345a'  # содержит букву
-        }
-
-        with pytest.raises(ValidationError):
-            TwoFactorAuthVerify(**data)
 
     def test_two_factor_auth_verify_code_valid(self):
         '''Тест валидной схемы TwoFactorAuthVerifyCode'''
@@ -132,7 +100,7 @@ class TestTwoFactorAuthSchemas:
             'access_token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
             'token_type': 'bearer'
         }
-        
+
         schema = TwoFactorAuthTokenResponse(**data)
         assert schema.access_token == 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
         assert schema.token_type == 'bearer'
@@ -142,7 +110,7 @@ class TestTwoFactorAuthSchemas:
         data = {
             'access_token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
         }
-        
+
         schema = TwoFactorAuthTokenResponse(**data)
         assert schema.access_token == 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
         assert schema.token_type == 'bearer'  # дефолтное значение
@@ -161,15 +129,15 @@ class TestTwoFactorAuthSchemas:
         # Код с 6 нулями
         schema = TwoFactorAuthVerifyCode(code='000000')
         assert schema.code == '000000'
-        
+
         # Код с 6 девятками
         schema = TwoFactorAuthVerifyCode(code='999999')
         assert schema.code == '999999'
-        
+
         # Код с пробелами (должен быть отклонен)
         with pytest.raises(ValidationError):
             TwoFactorAuthVerifyCode(code='123 56')
-        
+
         # Код с дефисами (должен быть отклонен)
         with pytest.raises(ValidationError):
             TwoFactorAuthVerifyCode(code='123-56')
@@ -185,11 +153,11 @@ class TestTwoFactorAuthSchemas:
             'email': 'test@example.com',
             'password': 'ValidPass123!'
         }
-        
+
         # TwoFactorAuthVerifyCode
         verify_code = TwoFactorAuthVerifyCode(code='123456')
         assert verify_code.model_dump() == {'code': '123456'}
-        
+
         # TwoFactorAuthResponse
         response = TwoFactorAuthResponse(
             message='Код отправлен',
