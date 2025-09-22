@@ -1,10 +1,11 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 from sqlalchemy import select, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.utils import is_2fa_code_expired
+from app.core.config import settings
 from app.models.two_factor_auth import TwoFactorAuthCode
 
 
@@ -138,7 +139,9 @@ class TwoFactorAuthCRUD:
             session: Сессия базы данных
         """
         # Удаляем коды старше 10 минут
-        cutoff_time = datetime.utcnow() - timedelta(minutes=10)
+        cutoff_time = datetime.now(timezone.utc) - timedelta(
+            minutes=settings.two_factor_auth_code_lifetime
+            )
         stmt = delete(TwoFactorAuthCode).where(
             TwoFactorAuthCode.created_at < cutoff_time
         )

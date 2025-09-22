@@ -16,6 +16,7 @@ from app.schemas.two_factor_auth import (
     TwoFactorAuthTokenResponse
 )
 
+
 router = APIRouter()
 
 

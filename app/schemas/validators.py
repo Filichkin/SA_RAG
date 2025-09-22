@@ -40,3 +40,10 @@ def validate_password_change(old_password: str, new_password: str) -> str:
         raise ValueError('Новый пароль не должен совпадать со старым')
 
     return validated_new_password
+
+
+def validate_code_type(code: str) -> str:
+    """Валидирует код - должен содержать только цифры"""
+    if not code.isdigit():
+        raise ValueError('Код должен содержать только цифры')
+    return code

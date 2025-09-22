@@ -1,4 +1,4 @@
-from .two_factor_auth import (
+from .two_factor_auth import ( # noqa
     TwoFactorAuthRequest,
     TwoFactorAuthVerify,
     TwoFactorAuthResponse,

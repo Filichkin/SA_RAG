@@ -12,6 +12,7 @@ class Constants:
     NAME_MIN_LEN = 1
     NAME_MAX_LEN = 50
     STRING_LEN = 120
+    TWO_FA_CODE_LEN = 6
     RAG_ENDPOINTS_PREFIX = '/api'
     RAG_ENDPOINTS_TAGS = ('RAG_Agent',)
 

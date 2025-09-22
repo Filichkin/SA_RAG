@@ -1,5 +1,8 @@
 from pydantic import BaseModel, Field, field_validator
 
+from app.core.constants import Constants
+from app.schemas.validators import validate_code_type
+
 
 class TwoFactorAuthRequest(BaseModel):
     """Схема для запроса двухфакторной аутентификации"""
@@ -34,17 +37,14 @@ class TwoFactorAuthVerify(BaseModel):
         ...,
         title='Code',
         description='6-значный код подтверждения',
-        min_length=6,
-        max_length=6
+        min_length=Constants.TWO_FA_CODE_LEN,
+        max_length=Constants.TWO_FA_CODE_LEN
     )
 
     @field_validator('code')
     @classmethod
     def validate_code(cls, code: str) -> str:
-        """Валидирует код - должен содержать только цифры"""
-        if not code.isdigit():
-            raise ValueError('Код должен содержать только цифры')
-        return code
+        return validate_code_type(code)
 
     class Config:
         json_schema_extra = {
@@ -83,17 +83,14 @@ class TwoFactorAuthVerifyCode(BaseModel):
         ...,
         title='Code',
         description='6-значный код подтверждения',
-        min_length=6,
-        max_length=6
+        min_length=Constants.TWO_FA_CODE_LEN,
+        max_length=Constants.TWO_FA_CODE_LEN
     )
 
     @field_validator('code')
     @classmethod
     def validate_code(cls, code: str) -> str:
-        """Валидирует код - должен содержать только цифры"""
-        if not code.isdigit():
-            raise ValueError('Код должен содержать только цифры')
-        return code
+        return validate_code_type(code)
 
     class Config:
         json_schema_extra = {
