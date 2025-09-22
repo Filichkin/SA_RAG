@@ -78,6 +78,7 @@ logging_config = LoggingConfig()
 
 # Добавляем логгеры для эндпоинтов
 logging_config.add_endpoint_logger('user', 'INFO')
+logging_config.add_endpoint_logger('two_factor_auth', 'INFO')
 
 # Экспортируем основной логгер
 __all__ = ['logger', 'logging_config']
