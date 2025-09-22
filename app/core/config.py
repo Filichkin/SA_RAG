@@ -37,6 +37,15 @@ class Settings(BaseSettings):
     postgres_db: str
     postgres_host: str
 
+    key_id: str
+    key_secret: str
+    auth_url: str
+    retrieve_url_template: str
+    knowledge_base_id: str
+    knowledge_base_version_id: str
+    retrieve_limit: int = 6
+    evolution_project_id: str
+
     class Config:
         env_file = '.env'
 
