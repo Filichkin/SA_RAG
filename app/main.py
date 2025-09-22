@@ -34,7 +34,7 @@ app = FastAPI(
        - Получите 6-значный код на email (действителен 10 минут)
 
     2. **Второй этап** - Проверка кода:
-       - POST `/auth/2fa/verify` с email и кодом
+       - POST `/auth/2fa/verify-code` с кодом и временным токеном
        - Получите JWT токен для авторизации
 
     ### Использование токена:
@@ -87,7 +87,6 @@ def custom_openapi():
         for method in openapi_schema['paths'][path]:
             if path not in [
                 '/auth/2fa/login',
-                '/auth/2fa/verify',
                 '/auth/2fa/verify-code'
             ]:
                 # Переопределяем схему безопасности на нашу BearerAuth

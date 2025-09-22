@@ -35,8 +35,8 @@ class Constants:
 
     # Two-factor authentication endpoints
     TWO_FA_LOGIN_PREFIX = '/auth/2fa/login'
-    TWO_FA_VERIFY_PREFIX = '/auth/2fa/verify'
     TWO_FA_VERIFY_CODE_PREFIX = '/auth/2fa/verify-code'
+    LOGOUT_PREFIX = '/auth/logout'
 
 
 class Messages:
@@ -65,6 +65,7 @@ class Messages:
     TWO_FA_CODE_EXPIRED_MSG = 'Код подтверждения истек'
     TWO_FA_LOGIN_SUCCESS_MSG = 'Вход выполнен успешно'
     TWO_FA_INVALID_CREDENTIALS_MSG = 'Неверный email или пароль'
+    LOGOUT_SUCCESS_MSG = 'Выход выполнен успешно'
 
 
 class Descriptions:
@@ -98,7 +99,7 @@ class Descriptions:
     TWO_FA_LOGIN_DESCRIPTION = (
         'Первый этап входа. Проверяет email и пароль, отправляет код на email.'
     )
-    TWO_FA_VERIFY_SUMMARY = 'Подтверждение кода двухфакторной аутентификации'
-    TWO_FA_VERIFY_DESCRIPTION = (
-        'Второй этап входа. Проверяет 6-значный код и выдает токен доступа.'
+    LOGOUT_SUMMARY = 'Выход из системы'
+    LOGOUT_DESCRIPTION = (
+        'Завершение сессии пользователя. Инвалидирует текущий токен.'
     )

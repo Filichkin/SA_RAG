@@ -32,8 +32,8 @@ async def get_user_db(
 
 
 # Создаем BearerTransport с фиктивным tokenUrl, так как теперь используется 2FA
-# В реальности токен получается через /auth/2fa/verify
-bearer_transport = BearerTransport(tokenUrl="auth/2fa/verify")
+# В реальности токен получается через /auth/2fa/verify-code
+bearer_transport = BearerTransport(tokenUrl="auth/2fa/verify-code")
 
 
 class CustomJWTStrategy(JWTStrategy):
