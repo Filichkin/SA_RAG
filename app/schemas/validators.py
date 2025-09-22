@@ -9,6 +9,8 @@ def validate_password_strength(password: str) -> str:
         raise ValueError('Пароль обязателен')
 
     password = password.strip()
+    if not password:
+        raise ValueError('Пароль обязателен')
     if len(password) < settings.user_password_min_len:
         raise ValueError(
             f'Пароль должен содержать минимум '
@@ -38,3 +40,10 @@ def validate_password_change(old_password: str, new_password: str) -> str:
         raise ValueError('Новый пароль не должен совпадать со старым')
 
     return validated_new_password
+
+
+def validate_code_type(code: str) -> str:
+    """Валидирует код - должен содержать только цифры"""
+    if not code.isdigit():
+        raise ValueError('Код должен содержать только цифры')
+    return code

@@ -26,7 +26,8 @@
 #### Ответ (успех):
 ```json
 {
-    "message": "Код подтверждения отправлен на email"
+    "message": "Код подтверждения отправлен на email",
+    "temp_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 }
 ```
 
@@ -39,14 +40,18 @@
 
 ### 2. Второй этап входа - проверка кода
 
-**POST** `/auth/2fa/verify`
+**POST** `/auth/2fa/verify-code`
 
-Проверяет 6-значный код и выдает JWT токен.
+Проверяет 6-значный код используя временный токен и выдает JWT токен.
+
+#### Заголовки:
+```
+X-Temp-Token: <временный_токен_из_первого_этапа>
+```
 
 #### Запрос:
 ```json
 {
-    "email": "user@example.com",
     "code": "123456"
 }
 ```
@@ -63,6 +68,31 @@
 ```json
 {
     "detail": "Неверный код подтверждения"
+}
+```
+
+### 3. Выход из системы
+
+**POST** `/auth/logout`
+
+Завершает сессию пользователя и инвалидирует токен.
+
+#### Заголовки:
+```
+Authorization: Bearer <ваш_jwt_токен>
+```
+
+#### Ответ (успех):
+```json
+{
+    "message": "Выход выполнен успешно"
+}
+```
+
+#### Ответ (ошибка):
+```json
+{
+    "detail": "Not authenticated"
 }
 ```
 
@@ -93,8 +123,8 @@
 ### Новые компоненты
 - **Модель**: `TwoFactorAuthCode` - для хранения кодов
 - **CRUD**: `TwoFactorAuthCRUD` - для работы с кодами
-- **Схемы**: `TwoFactorAuthRequest`, `TwoFactorAuthVerify`, etc.
-- **Эндпоинты**: `/auth/2fa/login`, `/auth/2fa/verify`
+- **Схемы**: `TwoFactorAuthRequest`, `TwoFactorAuthVerifyCode`, `LogoutResponse`
+- **Эндпоинты**: `/auth/2fa/login`, `/auth/2fa/verify-code`, `/auth/logout`
 
 ### База данных
 - Добавлена таблица `two_factor_auth_codes`
@@ -116,12 +146,18 @@ curl -X POST "http://localhost:8000/auth/2fa/login" \
 
 #### Шаг 2 - Проверка кода:
 ```bash
-curl -X POST "http://localhost:8000/auth/2fa/verify" \
+curl -X POST "http://localhost:8000/auth/2fa/verify-code" \
      -H "Content-Type: application/json" \
+     -H "X-Temp-Token: <временный_токен_из_первого_этапа>" \
      -d '{
-       "email": "user@example.com",
        "code": "123456"
      }'
+```
+
+#### Шаг 3 - Выход из системы:
+```bash
+curl -X POST "http://localhost:8000/auth/logout" \
+     -H "Authorization: Bearer <ваш_jwt_токен>"
 ```
 
 ### Python
@@ -141,21 +177,30 @@ async def login_with_2fa():
         )
         
         if response.status_code == 200:
+            data = response.json()
             print('Код отправлен на email')
+            temp_token = data['temp_token']
             
             # Шаг 2: Проверка кода
             code = input('Введите код из email: ')
             response = await client.post(
-                'http://localhost:8000/auth/2fa/verify',
-                json={
-                    'email': 'user@example.com',
-                    'code': code
-                }
+                'http://localhost:8000/auth/2fa/verify-code',
+                headers={'X-Temp-Token': temp_token},
+                json={'code': code}
             )
             
             if response.status_code == 200:
                 token = response.json()['access_token']
                 print(f'Успешный вход! Токен: {token}')
+                
+                # Шаг 3: Выход из системы
+                logout_response = await client.post(
+                    'http://localhost:8000/auth/logout',
+                    headers={'Authorization': f'Bearer {token}'}
+                )
+                
+                if logout_response.status_code == 200:
+                    print('Успешный выход из системы!')
 ```
 
 ## Тестирование

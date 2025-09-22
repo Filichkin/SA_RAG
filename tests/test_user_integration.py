@@ -3,6 +3,7 @@
 '''
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
+from unittest.mock import patch, AsyncMock
 
 from app.models.user import User
 
@@ -31,17 +32,40 @@ class TestUserWorkflow:
         user_info = register_response.json()
         user_id = user_info['id']
 
-        # 2. Вход пользователя
-        login_response = await client.post(
-            '/auth/jwt/login',
-            data={
-                'username': user_data['email'],
+        # 2. Вход пользователя через 2FA
+        # Мокаем отправку email
+        with patch('app.api.endpoints.two_factor_auth.email_service.'
+                   'send_2fa_code_email',
+                   new_callable=AsyncMock) as mock_send_email:
+            mock_send_email.return_value = True
+
+            # Первый этап 2FA - получение временного токена
+            login_response = await client.post('/auth/2fa/login', json={
+                'email': user_data['email'],
                 'password': user_data['password']
-            }
-        )
-        assert login_response.status_code == 200
-        token = login_response.json()['access_token']
-        headers = {'Authorization': f'Bearer {token}'}
+            })
+            assert login_response.status_code == 200
+            login_data = login_response.json()
+            temp_token = login_data['temp_token']
+
+            # Получаем код из базы данных (в реальности приходит на email)
+            from app.crud.two_factor_auth import two_factor_auth_crud
+            codes = await two_factor_auth_crud.get_user_codes(
+                user_id=user_id,
+                session=db_session
+            )
+            assert len(codes) > 0
+            code = codes[0].code
+
+            # Второй этап 2FA - проверка кода
+            verify_response = await client.post(
+                '/auth/2fa/verify-code',
+                json={'code': code},
+                headers={'X-Temp-Token': temp_token}
+            )
+            assert verify_response.status_code == 200
+            token = verify_response.json()['access_token']
+            headers = {'Authorization': f'Bearer {token}'}
 
         # 3. Получение информации о себе
         me_response = await client.get('/users/me', headers=headers)

@@ -12,11 +12,13 @@ class Constants:
     NAME_MIN_LEN = 1
     NAME_MAX_LEN = 50
     STRING_LEN = 120
+    TWO_FA_CODE_LEN = 6
     RAG_ENDPOINTS_PREFIX = '/api'
     RAG_ENDPOINTS_TAGS = ('RAG_Agent',)
 
     # HTTP Status Codes
     HTTP_400_BAD_REQUEST = 400
+    HTTP_401_UNAUTHORIZED = 401
     HTTP_403_FORBIDDEN = 403
     HTTP_404_NOT_FOUND = 404
 
@@ -30,10 +32,11 @@ class Constants:
     DELETE_USER_PREFIX = 'users/{user_id}'
     CHANGE_PASSWORD_PREFIX = '/users/change-password'
     RESET_PASSWORD_PREFIX = '/users/reset-password'
-    
+
     # Two-factor authentication endpoints
     TWO_FA_LOGIN_PREFIX = '/auth/2fa/login'
-    TWO_FA_VERIFY_PREFIX = '/auth/2fa/verify'
+    TWO_FA_VERIFY_CODE_PREFIX = '/auth/2fa/verify-code'
+    LOGOUT_PREFIX = '/auth/logout'
 
 
 class Messages:
@@ -55,13 +58,14 @@ class Messages:
     RESET_PASSWORD_SUCCESS_MSG = 'Новый пароль отправлен на email'
     EMAIL_NOT_FOUND_MSG = 'Пользователь с указанным email не найден'
     EMAIL_SEND_ERROR_MSG = 'Ошибка отправки email'
-    
+
     # Two-factor authentication messages
     TWO_FA_CODE_SENT_MSG = 'Код подтверждения отправлен на email'
     TWO_FA_CODE_INVALID_MSG = 'Неверный код подтверждения'
     TWO_FA_CODE_EXPIRED_MSG = 'Код подтверждения истек'
     TWO_FA_LOGIN_SUCCESS_MSG = 'Вход выполнен успешно'
     TWO_FA_INVALID_CREDENTIALS_MSG = 'Неверный email или пароль'
+    LOGOUT_SUCCESS_MSG = 'Выход выполнен успешно'
 
 
 class Descriptions:
@@ -89,13 +93,13 @@ class Descriptions:
         'Сбросить пароль пользователя. Новый пароль будет отправлен на email. '
         'Все активные сессии будут завершены.'
     )
-    
+
     # Two-factor authentication descriptions
     TWO_FA_LOGIN_SUMMARY = 'Вход с двухфакторной аутентификацией'
     TWO_FA_LOGIN_DESCRIPTION = (
         'Первый этап входа. Проверяет email и пароль, отправляет код на email.'
     )
-    TWO_FA_VERIFY_SUMMARY = 'Подтверждение кода двухфакторной аутентификации'
-    TWO_FA_VERIFY_DESCRIPTION = (
-        'Второй этап входа. Проверяет 6-значный код и выдает токен доступа.'
+    LOGOUT_SUMMARY = 'Выход из системы'
+    LOGOUT_DESCRIPTION = (
+        'Завершение сессии пользователя. Инвалидирует текущий токен.'
     )

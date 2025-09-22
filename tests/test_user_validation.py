@@ -18,8 +18,8 @@ class TestPasswordValidation:
         valid_passwords = [
             'StrongPass123!',
             'MySecure1@',
-            'Test123#',
-            'Password1$'
+            'Test123$',
+            'Password1&'
         ]
 
         for password in valid_passwords:

@@ -4,6 +4,7 @@ from sqlalchemy import String, DateTime, Integer, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.sql.functions import func
 
+from app.core.constants import Constants
 from app.core.db import Base
 
 
@@ -18,7 +19,7 @@ class TwoFactorAuthCode(Base):
         nullable=False
     )
     code: Mapped[str] = mapped_column(
-        String(length=6),
+        String(length=Constants.TWO_FA_CODE_LEN),
         nullable=False
     )
     created_at: Mapped[datetime] = mapped_column(

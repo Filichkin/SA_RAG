@@ -8,7 +8,8 @@ from pydantic import BaseModel, EmailStr, field_validator, Field
 from app.core.config import settings
 from app.core.constants import Constants
 from app.schemas.validators import (
-    validate_password_strength, validate_password_change
+    validate_password_change,
+    validate_password_strength
 )
 
 
