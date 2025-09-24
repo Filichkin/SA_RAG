@@ -1,19 +1,58 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
 
 from app.core.config import settings
+from app.core.constants import Constants, Messages, Descriptions
 from app.schemas.ai_response import AskWithAIResponse
 from app.services.agent.ai_agent import build_agent
 from app.services.agent.mcp_client import McpClient
+from app.logging import logging_config
 
 
 router = APIRouter()
 
 
-@router.post('/ask_with_ai')
+@router.post(
+    Constants.AI_ASK_PREFIX,
+    summary=Descriptions.AI_ASK_SUMMARY,
+    description=Descriptions.AI_ASK_DESCRIPTION,
+    tags=Constants.AI_AGENT_TAGS
+)
 async def ask_with_ai(
-    query: AskWithAIResponse,
+    request: AskWithAIResponse,
 ):
+    '''
+    Эндпоинт для взаимодействия с AI ассистентом.
+
+    Args:
+        request: Объект с полем query, содержащим вопрос пользователя
+
+    Returns:
+        StreamingResponse: Потоковый ответ от AI ассистента
+    '''
+    logger = logging_config.get_endpoint_logger('ai_agent')
+
+    # Валидация входных данных
+    if not request.query or not request.query.strip():
+        logger.warning('Получен пустой запрос')
+        raise HTTPException(
+            status_code=Constants.HTTP_400_BAD_REQUEST,
+            detail=Messages.AI_EMPTY_QUERY_MSG
+        )
+
+    if len(request.query) > Constants.AI_QUERY_MAX_LENGTH:
+        logger.warning(
+            f'Запрос слишком длинный: {len(request.query)} символов'
+        )
+        raise HTTPException(
+            status_code=Constants.HTTP_400_BAD_REQUEST,
+            detail=Messages.AI_QUERY_TOO_LONG_MSG
+        )
+
+    logger.info(
+        f'Получен запрос: '
+        f'{request.query[:Constants.AI_QUERY_PREVIEW_LENGTH]}...'
+    )
 
     try:
         async with McpClient(
@@ -30,19 +69,44 @@ async def ask_with_ai(
                 verify_ssl=settings.gigachat_verify_ssl,
             )
 
-            async def stream_response():
-                async for chunk in astream_answer(query):
-                    yield chunk
-            return await StreamingResponse(
+            def stream_response():
+                async def _async_generator():
+                    try:
+                        async for chunk in astream_answer(request.query):
+                            yield chunk
+                    except Exception as stream_error:
+                        logger.error(
+                            f'Ошибка при стриминге ответа: {stream_error}'
+                        )
+                        yield f'{Messages.AI_STREAM_ERROR_MSG}: {stream_error}'
+
+                return _async_generator()
+
+            return StreamingResponse(
                 stream_response(),
-                media_type='text/plain',
+                media_type='text/plain; charset=utf-8',
                 headers={
-                    'Content-Type': 'text/plain',
-                    'Transfer-Encoding': 'chunked',
                     'Cache-Control': 'no-cache',
                     'Connection': 'keep-alive',
                 },
             )
 
     except Exception as e:
-        return {'response': f'Ничего не найдено, ошибка: {e}'}
+        logger.error(f'Ошибка в ask_with_ai: {e}', exc_info=True)
+        error_message = str(e)
+
+        # Возвращаем StreamingResponse с ошибкой вместо обычного словаря
+        def error_stream():
+            async def _async_generator():
+                yield f'{Messages.AI_GENERAL_ERROR_MSG}: {error_message}'
+
+            return _async_generator()
+
+        return StreamingResponse(
+            error_stream(),
+            media_type='text/plain; charset=utf-8',
+            status_code=500,
+            headers={
+                'Cache-Control': 'no-cache',
+            },
+        )
