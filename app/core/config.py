@@ -46,6 +46,17 @@ class Settings(BaseSettings):
     retrieve_limit: int = 6
     evolution_project_id: str
 
+    mcp_server_url: str
+    mcp_transport: str = 'sse'
+    mcp_rag_tool_name: str = 'request_to_rag'
+
+    gigachat_credentials: str
+    gigachat_scope: str
+    gigachat_model: str = 'GigaChat-2'
+    gigachat_temperature: float = 0.3
+    gigachat_verify_ssl: bool = False
+    max_tokens: int = 2000
+
     class Config:
         env_file = '.env'
 

@@ -79,6 +79,8 @@ logging_config = LoggingConfig()
 # Добавляем логгеры для эндпоинтов
 logging_config.add_endpoint_logger('user', 'INFO')
 logging_config.add_endpoint_logger('two_factor_auth', 'INFO')
+logging_config.add_endpoint_logger('mcp_rag_server', 'INFO')
+logging_config.add_endpoint_logger('agent_logger', 'INFO')
 
 # Экспортируем основной логгер
 __all__ = ['logger', 'logging_config']

@@ -81,8 +81,8 @@ class McpClient:
         # result.content could be a list of content blocks
         blocks: Iterable[Any] = getattr(result, 'content', [])
         texts: list[str] = []
-        for b in blocks:
-            text = getattr(b, 'text', None)
+        for block in blocks:
+            text = getattr(block, 'text', None)
             if text:
                 texts.append(text)
         return '\n'.join(texts).strip()
