@@ -1,4 +1,6 @@
 import asyncio
+import signal
+import sys
 
 import httpx
 from typing import Dict, Any
@@ -166,6 +168,13 @@ async def request_to_rag(query: str) -> str:
     return postprocessed_retrieve_result
 
 
+def signal_handler(signum, frame):
+    """Обработчик сигналов для корректного завершения."""
+    mcp_logger = logging_config.get_endpoint_logger('mcp_rag_server')
+    mcp_logger.info('🛑 Получен сигнал завершения, останавливаем сервер...')
+    sys.exit(0)
+
+
 if __name__ == '__main__':
     mcp_logger = logging_config.get_endpoint_logger('mcp_rag_server')
     mcp_logger.info('🌐 Запуск MCP Evolution Managed RAG Server...')
@@ -178,5 +187,15 @@ if __name__ == '__main__':
         )
     mcp_logger.info('✋ Для остановки нажмите Ctrl+C')
 
-    # Запуск сервера с SSE транспортом
-    mcp.run(transport='sse')
+    # Устанавливаем обработчики сигналов
+    signal.signal(signal.SIGINT, signal_handler)
+    signal.signal(signal.SIGTERM, signal_handler)
+
+    try:
+        # Запуск сервера с SSE транспортом
+        mcp.run(transport='sse')
+    except KeyboardInterrupt:
+        mcp_logger.info('🛑 Сервер остановлен пользователем')
+    except Exception as e:
+        mcp_logger.error(f'❌ Ошибка при запуске сервера: {e}')
+        sys.exit(1)
