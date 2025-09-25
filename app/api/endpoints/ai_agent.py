@@ -54,7 +54,8 @@ async def ask_with_ai(
         f'{request.query[:Constants.AI_QUERY_PREVIEW_LENGTH]}...'
     )
 
-    try:
+    async def stream_response():
+        """Stream response with MCP client context managed properly."""
         async with McpClient(
             settings.mcp_server_url,
             transport=settings.mcp_transport
@@ -69,27 +70,24 @@ async def ask_with_ai(
                 verify_ssl=settings.gigachat_verify_ssl,
             )
 
-            def stream_response():
-                async def _async_generator():
-                    try:
-                        async for chunk in astream_answer(request.query):
-                            yield chunk
-                    except Exception as stream_error:
-                        logger.error(
-                            f'Ошибка при стриминге ответа: {stream_error}'
-                        )
-                        yield f'{Messages.AI_STREAM_ERROR_MSG}: {stream_error}'
+            try:
+                async for chunk in astream_answer(request.query):
+                    yield chunk
+            except Exception as stream_error:
+                logger.error(
+                    f'Ошибка при стриминге ответа: {stream_error}'
+                )
+                yield f'{Messages.AI_STREAM_ERROR_MSG}: {stream_error}'
 
-                return _async_generator()
-
-            return StreamingResponse(
-                stream_response(),
-                media_type='text/plain; charset=utf-8',
-                headers={
-                    'Cache-Control': 'no-cache',
-                    'Connection': 'keep-alive',
-                },
-            )
+    try:
+        return StreamingResponse(
+            stream_response(),
+            media_type='text/plain; charset=utf-8',
+            headers={
+                'Cache-Control': 'no-cache',
+                'Connection': 'keep-alive',
+            },
+        )
 
     except Exception as e:
         logger.error(f'Ошибка в ask_with_ai: {e}', exc_info=True)
