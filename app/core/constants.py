@@ -38,6 +38,12 @@ class Constants:
     TWO_FA_VERIFY_CODE_PREFIX = '/auth/2fa/verify-code'
     LOGOUT_PREFIX = '/auth/logout'
 
+    # AI Agent endpoints
+    AI_ASK_PREFIX = '/ask_with_ai'
+    AI_AGENT_TAGS = ('ai_agent',)
+    AI_QUERY_MAX_LENGTH = 1000
+    AI_QUERY_PREVIEW_LENGTH = 100
+
 
 class Messages:
     PASSWORD_TOO_SHORT = (
@@ -66,6 +72,16 @@ class Messages:
     TWO_FA_LOGIN_SUCCESS_MSG = 'Вход выполнен успешно'
     TWO_FA_INVALID_CREDENTIALS_MSG = 'Неверный email или пароль'
     LOGOUT_SUCCESS_MSG = 'Выход выполнен успешно'
+
+    # AI Agent messages
+    AI_EMPTY_QUERY_MSG = 'Запрос не может быть пустым'
+    AI_QUERY_TOO_LONG_MSG = (
+        'Запрос слишком длинный (максимум 1000 символов)'
+    )
+    AI_STREAM_ERROR_MSG = 'Ошибка при генерации ответа'
+    AI_GENERAL_ERROR_MSG = (
+        'К сожалению, произошла ошибка при обработке запроса'
+    )
 
 
 class Descriptions:
@@ -102,4 +118,10 @@ class Descriptions:
     LOGOUT_SUMMARY = 'Выход из системы'
     LOGOUT_DESCRIPTION = (
         'Завершение сессии пользователя. Инвалидирует текущий токен.'
+    )
+
+    # AI Agent descriptions
+    AI_ASK_SUMMARY = 'Задать вопрос AI ассистенту'
+    AI_ASK_DESCRIPTION = (
+        'Отправляет запрос к AI ассистенту для поиска информации в базе знаний'
     )
