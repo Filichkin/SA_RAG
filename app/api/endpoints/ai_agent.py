@@ -1,12 +1,14 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
 
 from app.core.config import settings
 from app.core.constants import Constants, Messages, Descriptions
+from app.core.user import current_user
+from app.logging import logging_config
+from app.models.user import User
 from app.schemas.ai_response import AskWithAIResponse
 from app.services.agent.ai_agent import build_agent
 from app.services.agent.mcp_client import McpClient
-from app.logging import logging_config
 
 
 router = APIRouter()
@@ -20,12 +22,15 @@ router = APIRouter()
 )
 async def ask_with_ai(
     request: AskWithAIResponse,
+    current_user: User = Depends(current_user),
 ):
     '''
     Эндпоинт для взаимодействия с AI ассистентом.
+    Требует аутентификации через JWT токен.
 
     Args:
         request: Объект с полем query, содержащим вопрос пользователя
+        current_user: Авторизованный пользователь (через JWT токен)
 
     Returns:
         StreamingResponse: Потоковый ответ от AI ассистента
@@ -50,7 +55,8 @@ async def ask_with_ai(
         )
 
     logger.info(
-        f'Получен запрос: '
+        f'Получен запрос от пользователя {current_user.id} '
+        f'({current_user.email}): '
         f'{request.query[:Constants.AI_QUERY_PREVIEW_LENGTH]}...'
     )
 
