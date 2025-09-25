@@ -40,7 +40,7 @@ class Constants:
 
     # AI Agent endpoints
     AI_ASK_PREFIX = '/ask_with_ai'
-    AI_AGENT_TAGS = ('AI_Agent',)
+    AI_AGENT_TAGS = ('ai_agent',)
     AI_QUERY_MAX_LENGTH = 1000
     AI_QUERY_PREVIEW_LENGTH = 100
 

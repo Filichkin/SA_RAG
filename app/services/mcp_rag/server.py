@@ -104,6 +104,7 @@ async def request_to_rag(query: str) -> str:
         async with httpx.AsyncClient(timeout=20.0) as client:
             payload = {
                 'project_id': settings.evolution_project_id,
+                'query': query,
                 'retrieve_limit': retrieve_limit,
                 'rag_version': settings.knowledge_base_version_id,
             }
