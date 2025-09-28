@@ -82,6 +82,13 @@ class UserCreate(UserBase, schemas.BaseUserCreate):
         min_length=settings.user_password_min_len,
         max_length=settings.user_password_max_len,
     )
+    password_confirm: str = Field(
+        ...,
+        title='Password Confirm',
+        description='Подтверждение пароля',
+        min_length=settings.user_password_min_len,
+        max_length=settings.user_password_max_len,
+    )
     first_name: str = Field(
         ...,
         title='First Name',
@@ -102,16 +109,31 @@ class UserCreate(UserBase, schemas.BaseUserCreate):
     def validate_password(cls, password: str) -> str:
         return validate_password_strength(password)
 
+    @field_validator('password_confirm')
+    @classmethod
+    def validate_password_confirm(cls, password_confirm: str, info) -> str:
+        password = info.data.get('password', '')
+        if password != password_confirm:
+            raise ValueError('Пароли не совпадают')
+        return password_confirm
+
+    def model_dump(self, **kwargs):
+        """Исключаем password_confirm из данных для сохранения в БД"""
+        data = super().model_dump(**kwargs)
+        data.pop('password_confirm', None)
+        return data
+
     class Config:
         exclude = {'is_active', 'is_superuser', 'is_verified'}
         json_schema_extra = {
-            "example": {
-                "email": "user@example.com",
-                "password": "SecurePass123!",
-                "first_name": "Alex",
-                "last_name": "Fill",
-                "date_of_birth": "1992-05-20",
-                "phone": "+79031234567"
+            'example': {
+                'email': 'user@example.com',
+                'password': 'SecurePass123!',
+                'password_confirm': 'SecurePass123!',
+                'first_name': 'Alex',
+                'last_name': 'Fill',
+                'date_of_birth': '1992-05-20',
+                'phone': '+79031234567'
             }
         }
 

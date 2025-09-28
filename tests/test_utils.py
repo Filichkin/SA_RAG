@@ -50,9 +50,11 @@ def generate_random_birth_date() -> str:
 
 def create_test_user_data(**overrides) -> Dict[str, Any]:
     '''Создает данные тестового пользователя с возможностью переопределения'''
+    password = generate_random_password()
     default_data = {
         'email': generate_random_email(),
-        'password': generate_random_password(),
+        'password': password,
+        'password_confirm': password,
         'first_name': generate_random_name(),
         'last_name': generate_random_name(),
         'date_of_birth': generate_random_birth_date(),
@@ -120,6 +122,7 @@ class TestDataFactory:
         return {
             'email': 'invalid-email',
             'password': '123',
+            'password_confirm': '123',
             'first_name': '',
             'last_name': 'A' * 100,
             'phone': 'invalid-phone',
