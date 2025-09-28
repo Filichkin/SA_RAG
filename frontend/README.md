@@ -1,12 +1,90 @@
-# React + Vite
+# Frontend SPA приложение
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React SPA приложение с Redux Toolkit, Tailwind CSS и двухфакторной аутентификацией.
 
-Currently, two official plugins are available:
+## Функциональность
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- ✅ Регистрация пользователей
+- ✅ Двухфакторная аутентификация (2FA)
+- ✅ Вход в систему
+- ✅ Выход из системы
+- ✅ Главная страница с интерфейсом чат-бота
+- ✅ Адаптивный дизайн с Tailwind CSS
+- ✅ Управление состоянием с Redux Toolkit
 
-## Expanding the ESLint configuration
+## Технологии
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- **React 19** - UI библиотека
+- **Redux Toolkit** - управление состоянием
+- **Tailwind CSS** - стилизация
+- **Vite** - сборщик
+
+## Структура проекта
+
+```
+src/
+├── api/
+│   └── index.js          # API слой для взаимодействия с бэкендом
+├── components/
+│   ├── LoginForm.jsx     # Форма входа с 2FA
+│   ├── RegisterForm.jsx  # Форма регистрации
+│   └── ChatBot.jsx       # Главная страница с чат-ботом
+├── store/
+│   ├── index.js          # Redux store конфигурация
+│   └── slices/
+│       └── authSlice.js  # Auth slice с async thunks
+├── App.jsx               # Главный компонент с роутингом
+└── main.jsx              # Точка входа
+```
+
+## API эндпоинты
+
+- `POST /register` - регистрация пользователя
+- `POST /auth/2fa-login` - первый этап входа (email + пароль)
+- `POST /auth/2fa-verify-code` - второй этап входа (код подтверждения)
+- `POST /auth/logout` - выход из системы
+- `GET /users/me` - получение данных текущего пользователя
+
+## Запуск приложения
+
+1. Установите зависимости:
+```bash
+npm install
+```
+
+2. Запустите dev сервер:
+```bash
+npm run dev
+```
+
+3. Откройте браузер по адресу: `http://localhost:5173`
+
+## Использование
+
+### Регистрация
+1. Нажмите "Зарегистрироваться" на странице входа
+2. Заполните форму регистрации
+3. После успешной регистрации вы будете перенаправлены на главную страницу
+
+### Вход в систему
+1. Введите email и пароль
+2. Нажмите "Войти"
+3. Проверьте почту и введите 6-значный код
+4. После успешной аутентификации вы попадете на главную страницу
+
+### Главная страница
+- Интерфейс чат-бота с возможностью отправки сообщений
+- Кнопка "Выйти" для завершения сессии
+- Отображение имени пользователя в заголовке
+
+## Особенности реализации
+
+- **Двухфакторная аутентификация**: После ввода email/пароля система отправляет код на почту
+- **Автоматическое сохранение токена**: Токен сохраняется в localStorage
+- **Проверка аутентификации**: При загрузке приложения проверяется валидность токена
+- **Обработка ошибок**: Все ошибки API отображаются пользователю
+- **Адаптивный дизайн**: Интерфейс адаптируется под разные размеры экрана
+
+## Настройка бэкенда
+
+Убедитесь, что бэкенд сервер запущен на `http://localhost:8000` и доступны все необходимые эндпоинты.
