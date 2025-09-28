@@ -83,6 +83,7 @@ async def test_user(db_session: AsyncSession) -> User:
         user_create = UserCreate(
             email='test@example.com',
             password='TestPass123!',
+            password_confirm='TestPass123!',
             first_name='Test',
             last_name='User',
             date_of_birth=None,
@@ -103,6 +104,7 @@ async def test_admin_user(db_session: AsyncSession) -> User:
         user_create = UserCreate(
             email='admin@example.com',
             password='AdminPass123!',
+            password_confirm='AdminPass123!',
             first_name='Admin',
             last_name='User',
             date_of_birth=None,
@@ -127,6 +129,7 @@ async def test_superuser(db_session: AsyncSession) -> User:
         user_create = UserCreate(
             email='superuser@example.com',
             password='SuperPass123!',
+            password_confirm='SuperPass123!',
             first_name='Super',
             last_name='User',
             date_of_birth=None,

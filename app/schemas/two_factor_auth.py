@@ -21,7 +21,7 @@ class TwoFactorAuthRequest(BaseModel):
         json_schema_extra = {
             'example': {
                 'email': 'filichkin_a@mail.ru',
-                'password': 'SecurePass123!'
+                'password': 'fm4!jYb!'
             }
         }
 

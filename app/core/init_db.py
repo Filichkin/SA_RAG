@@ -29,6 +29,7 @@ async def create_user(
                         UserCreate(
                             email=email,
                             password=password,
+                            password_confirm=password,
                             is_superuser=is_superuser,
                             first_name=first_name,
                             last_name=last_name

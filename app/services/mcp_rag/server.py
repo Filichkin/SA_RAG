@@ -187,12 +187,10 @@ if __name__ == '__main__':
         )
     mcp_logger.info('✋ Для остановки нажмите Ctrl+C')
 
-    # Устанавливаем обработчики сигналов
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
 
     try:
-        # Запуск сервера с SSE транспортом
         mcp.run(transport='sse')
     except KeyboardInterrupt:
         mcp_logger.info('🛑 Сервер остановлен пользователем')

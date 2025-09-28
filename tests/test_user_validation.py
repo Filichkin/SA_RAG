@@ -94,6 +94,7 @@ class TestUserSchemaValidation:
         user_data = {
             'email': 'test@example.com',
             'password': 'TestPass123!',
+            'password_confirm': 'TestPass123!',
             'first_name': 'Test',
             'last_name': 'User',
             'date_of_birth': '1990-01-01',
@@ -111,6 +112,7 @@ class TestUserSchemaValidation:
         user_data = {
             'email': 'invalid-email',
             'password': 'TestPass123!',
+            'password_confirm': 'TestPass123!',
             'first_name': 'Test',
             'last_name': 'User'
         }
@@ -123,6 +125,7 @@ class TestUserSchemaValidation:
         user_data = {
             'email': 'test@example.com',
             'password': '123',
+            'password_confirm': '123',
             'first_name': 'Test',
             'last_name': 'User'
         }
@@ -135,6 +138,7 @@ class TestUserSchemaValidation:
         user_data = {
             'email': 'test@example.com',
             'password': 'TestPass123!',
+            'password_confirm': 'TestPass123!',
             'first_name': 'Test',
             'last_name': 'User',
             'phone': '123'  # Невалидный формат
@@ -149,6 +153,7 @@ class TestUserSchemaValidation:
         user_data = {
             'email': 'test@example.com',
             'password': 'TestPass123!',
+            'password_confirm': 'TestPass123!',
             'first_name': 'Test',
             'last_name': 'User',
             'date_of_birth': future_date
@@ -248,6 +253,7 @@ class TestPhoneValidation:
             user_data = {
                 'email': 'test@example.com',
                 'password': 'TestPass123!',
+                'password_confirm': 'TestPass123!',
                 'first_name': 'Test',
                 'last_name': 'User',
                 'phone': phone
@@ -285,6 +291,7 @@ class TestPhoneValidation:
         user_data = {
             'email': 'test@example.com',
             'password': 'TestPass123!',
+            'password_confirm': 'TestPass123!',
             'first_name': 'Test',
             'last_name': 'User',
             'phone': ''
@@ -298,6 +305,7 @@ class TestPhoneValidation:
         user_data = {
             'email': 'test@example.com',
             'password': 'TestPass123!',
+            'password_confirm': 'TestPass123!',
             'first_name': 'Test',
             'last_name': 'User',
             'phone': None
@@ -322,6 +330,7 @@ class TestDateValidation:
             user_data = {
                 'email': 'test@example.com',
                 'password': 'TestPass123!',
+                'password_confirm': 'TestPass123!',
                 'first_name': 'Test',
                 'last_name': 'User',
                 'date_of_birth': birth_date
@@ -335,6 +344,7 @@ class TestDateValidation:
         user_data = {
             'email': 'test@example.com',
             'password': 'TestPass123!',
+            'password_confirm': 'TestPass123!',
             'first_name': 'Test',
             'last_name': 'User',
             'date_of_birth': future_date
@@ -352,6 +362,7 @@ class TestDateValidation:
         user_data = {
             'email': 'test@example.com',
             'password': 'TestPass123!',
+            'password_confirm': 'TestPass123!',
             'first_name': 'Test',
             'last_name': 'User',
             'date_of_birth': today
@@ -365,6 +376,7 @@ class TestDateValidation:
         user_data = {
             'email': 'test@example.com',
             'password': 'TestPass123!',
+            'password_confirm': 'TestPass123!',
             'first_name': 'Test',
             'last_name': 'User',
             'date_of_birth': None
