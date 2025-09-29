@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { verifyCode, clearError } from '../store/slices/authSlice';
+import { verifyCode } from '../store/slices/authSlice';
 
 const TwoFactorAuth = () => {
   const dispatch = useDispatch();
@@ -18,16 +18,16 @@ const TwoFactorAuth = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
+    <div className="flex items-center justify-center min-h-screen px-4 py-12 bg-gray-50 sm:px-6 lg:px-8">
+      <div className="w-full max-w-md space-y-8">
         <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+          <h2 className="mt-6 text-3xl font-extrabold text-center text-gray-900">
             Подтверждение входа
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
+          <p className="mt-2 text-sm text-center text-gray-600">
             Введите 6-значный код, отправленный на вашу почту
           </p>
-          <p className="mt-1 text-center text-xs text-blue-600">
+          <p className="mt-1 text-xs text-center text-blue-600">
             💡 Для разработки: код отображается в консоли сервера
           </p>
         </div>
@@ -44,13 +44,13 @@ const TwoFactorAuth = () => {
               maxLength="6"
               value={code}
               onChange={handleInputChange}
-              className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm text-center text-2xl tracking-widest"
+              className="relative block w-full px-3 py-2 text-2xl tracking-widest text-center text-gray-900 placeholder-gray-500 border border-gray-300 rounded-md appearance-none focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
               placeholder="000000"
             />
           </div>
 
           {error && (
-            <div className="text-red-600 text-sm text-center">
+            <div className="text-sm text-center text-red-600">
               {typeof error === 'string' ? error : JSON.stringify(error)}
             </div>
           )}
@@ -59,7 +59,7 @@ const TwoFactorAuth = () => {
             <button
               type="submit"
               disabled={isLoading || code.length !== 6}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="relative flex justify-center w-full px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md group hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? 'Проверка...' : 'Подтвердить'}
             </button>

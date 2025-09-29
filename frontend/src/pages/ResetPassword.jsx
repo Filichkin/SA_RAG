@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { authAPI } from '../api/index';
 
 const ResetPassword = () => {
   const [email, setEmail] = useState('');
@@ -12,45 +13,30 @@ const ResetPassword = () => {
     setError('');
     
     try {
-      console.log('Отправляем запрос на сброс пароля для:', email);
-      
-      const response = await fetch('/users/reset-password', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email }),
-      });
-
-      console.log('Ответ сервера:', response.status, response.statusText);
-
-      if (response.ok) {
-        const data = await response.json();
-        console.log('Успешный ответ:', data);
-        setIsSubmitted(true);
-      } else {
-        // Обработка ошибок
-        let errorMessage = 'Произошла ошибка при сбросе пароля';
-        
-        try {
-          const data = await response.json();
-          console.log('Ошибка от сервера:', data);
-          
-          if (response.status === 404) {
-            errorMessage = 'Пользователь с таким email не найден';
-          } else {
-            errorMessage = data.detail || errorMessage;
-          }
-        } catch (parseError) {
-          console.error('Ошибка парсинга ответа:', parseError);
-          errorMessage = `Ошибка сервера: ${response.status} ${response.statusText}`;
-        }
-        
-        setError(errorMessage);
-      }
+      const response = await authAPI.resetPassword(email);
+      console.log('Успешный ответ:', response);
+      setIsSubmitted(true);
     } catch (error) {
       console.error('Ошибка при сбросе пароля:', error);
-      setError('Произошла ошибка при отправке запроса');
+      
+      // Обработка ошибок
+      let errorMessage = 'Произошла ошибка при сбросе пароля';
+      
+      if (error.response) {
+        const { status, data } = error.response;
+        console.log('Ошибка от сервера:', status, data);
+        
+        if (status === 404) {
+          errorMessage = 'Пользователь с таким email не найден';
+        } else if (data && data.detail) {
+          errorMessage = data.detail;
+        } else if (data && Array.isArray(data) && data.length > 0) {
+          // Обработка массива ошибок валидации
+          errorMessage = data[0].msg || 'Ошибка валидации';
+        }
+      }
+      
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }

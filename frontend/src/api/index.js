@@ -86,6 +86,17 @@ class AuthAPI {
       },
     });
   }
+
+  // Сброс пароля
+  async resetPassword(email) {
+    console.log('API: Отправляем запрос на сброс пароля для:', email);
+    const response = await this.request('/users/reset-password', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    });
+    console.log('API: Получен ответ на сброс пароля:', response);
+    return response;
+  }
 }
 
 export const authAPI = new AuthAPI();
