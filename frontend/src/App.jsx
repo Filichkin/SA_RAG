@@ -4,6 +4,7 @@ import { store } from './store/store';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Home from './pages/Home';
+import ResetPassword from './pages/ResetPassword';
 import Layout from './components/Layout';
 import { getCurrentUser } from './store/slices/authSlice';
 
@@ -45,7 +46,7 @@ function AppContent() {
         {currentView === 'login' ? (
           <div>
             <Login />
-            <div className="text-center pb-8">
+            <div className="text-center pb-8 space-y-2">
               <p className="text-sm text-gray-600">
                 Нет аккаунта?{' '}
                 <button
@@ -55,14 +56,38 @@ function AppContent() {
                   Зарегистрироваться
                 </button>
               </p>
+              <p className="text-sm text-gray-600">
+                Забыли пароль?{' '}
+                <button
+                  onClick={() => setCurrentView('reset')}
+                  className="font-medium text-red-600 hover:text-red-500"
+                >
+                  Сбросить пароль
+                </button>
+              </p>
             </div>
           </div>
-        ) : (
+        ) : currentView === 'register' ? (
           <div>
             <Register />
             <div className="text-center pb-8">
               <p className="text-sm text-gray-600">
                 Уже есть аккаунт?{' '}
+                <button
+                  onClick={() => setCurrentView('login')}
+                  className="font-medium text-indigo-600 hover:text-indigo-500"
+                >
+                  Войти
+                </button>
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div>
+            <ResetPassword />
+            <div className="text-center pb-8">
+              <p className="text-sm text-gray-600">
+                Вспомнили пароль?{' '}
                 <button
                   onClick={() => setCurrentView('login')}
                   className="font-medium text-indigo-600 hover:text-indigo-500"
