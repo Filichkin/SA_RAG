@@ -15,9 +15,47 @@ const Register = () => {
     date_of_birth: '',
     phone: '',
   });
+  
+  const [localError, setLocalError] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Очищаем предыдущие ошибки
+    setLocalError('');
+    dispatch(clearError());
+    
+    // Валидация на фронтенде
+    if (formData.password.length < 8) {
+      setLocalError('Пароль должен содержать минимум 8 символов');
+      return;
+    }
+    
+    // Проверка сложности пароля
+    const hasLetter = /[A-Za-z]/.test(formData.password);
+    const hasDigit = /\d/.test(formData.password);
+    const hasSpecialChar = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~`]/.test(formData.password);
+    
+    if (!hasLetter || !hasDigit || !hasSpecialChar) {
+      setLocalError('Пароль должен содержать минимум 1 букву, 1 цифру и 1 спецсимвол');
+      return;
+    }
+    
+    if (formData.password !== formData.password_confirm) {
+      setLocalError('Пароли не совпадают');
+      return;
+    }
+    
+    if (formData.first_name.length < 1) {
+      setLocalError('Имя обязательно для заполнения');
+      return;
+    }
+    
+    if (formData.last_name.length < 1) {
+      setLocalError('Фамилия обязательна для заполнения');
+      return;
+    }
+    
     dispatch(registerUser(formData));
   };
 
@@ -104,6 +142,9 @@ const Register = () => {
                 className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 placeholder="Пароль"
               />
+              <p className="mt-1 text-xs text-gray-500">
+                Минимум 8 символов, включая 1 букву, 1 цифру и 1 спецсимвол
+              </p>
             </div>
 
             <div>
@@ -153,9 +194,20 @@ const Register = () => {
             </div>
           </div>
 
-          {error && (
-            <div className="text-red-600 text-sm text-center">
-              {error}
+          {(error || localError) && (
+            <div className="bg-red-50 border border-red-200 rounded-md p-3">
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm text-red-800">
+                    {localError || (typeof error === 'string' ? error : JSON.stringify(error))}
+                  </p>
+                </div>
+              </div>
             </div>
           )}
 

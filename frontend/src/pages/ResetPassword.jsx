@@ -12,7 +12,9 @@ const ResetPassword = () => {
     setError('');
     
     try {
-      const response = await fetch('/api/users/reset-password', {
+      console.log('Отправляем запрос на сброс пароля для:', email);
+      
+      const response = await fetch('/users/reset-password', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -20,17 +22,31 @@ const ResetPassword = () => {
         body: JSON.stringify({ email }),
       });
 
-      const data = await response.json();
+      console.log('Ответ сервера:', response.status, response.statusText);
 
       if (response.ok) {
+        const data = await response.json();
+        console.log('Успешный ответ:', data);
         setIsSubmitted(true);
       } else {
         // Обработка ошибок
-        if (response.status === 404) {
-          setError('Пользователь с таким email не найден');
-        } else {
-          setError(data.detail || 'Произошла ошибка при сбросе пароля');
+        let errorMessage = 'Произошла ошибка при сбросе пароля';
+        
+        try {
+          const data = await response.json();
+          console.log('Ошибка от сервера:', data);
+          
+          if (response.status === 404) {
+            errorMessage = 'Пользователь с таким email не найден';
+          } else {
+            errorMessage = data.detail || errorMessage;
+          }
+        } catch (parseError) {
+          console.error('Ошибка парсинга ответа:', parseError);
+          errorMessage = `Ошибка сервера: ${response.status} ${response.statusText}`;
         }
+        
+        setError(errorMessage);
       }
     } catch (error) {
       console.error('Ошибка при сбросе пароля:', error);
