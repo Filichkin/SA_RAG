@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { Link, useNavigate } from 'react-router-dom';
 import { loginUser, verifyCode, clearError, setLoginStep } from '../store/slices/authSlice';
 
 const Login = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { loginStep, isLoading, error, tempToken } = useSelector((state) => state.auth);
   
   const [credentials, setCredentials] = useState({
@@ -16,12 +18,18 @@ const Login = () => {
   const handleCredentialsSubmit = async (e) => {
     e.preventDefault();
     console.log('Отправляем данные для входа:', credentials);
-    dispatch(loginUser(credentials));
+    const result = await dispatch(loginUser(credentials));
+    if (result.payload && result.payload.temp_token) {
+      navigate('/two-factor-auth');
+    }
   };
 
   const handleCodeSubmit = async (e) => {
     e.preventDefault();
-    dispatch(verifyCode({ code, tempToken }));
+    const result = await dispatch(verifyCode({ code, tempToken }));
+    if (result.payload && result.payload.access_token) {
+      navigate('/');
+    }
   };
 
   const handleBackToCredentials = () => {
@@ -162,6 +170,21 @@ const Login = () => {
             </button>
           </div>
         </form>
+        
+        <div className="text-center mt-6 space-y-2">
+          <p className="text-sm text-gray-600">
+            Нет аккаунта?{' '}
+            <Link to="/register" className="font-medium text-indigo-600 hover:text-indigo-500">
+              Зарегистрироваться
+            </Link>
+          </p>
+          <p className="text-sm text-gray-600">
+            Забыли пароль?{' '}
+            <Link to="/reset-password" className="font-medium text-red-600 hover:text-red-500">
+              Сбросить пароль
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );

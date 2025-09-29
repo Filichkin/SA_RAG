@@ -1,12 +1,15 @@
 import { useSelector, useDispatch } from 'react-redux';
+import { Link, useNavigate } from 'react-router-dom';
 import { logoutUser } from '../store/slices/authSlice';
 
 function Header() {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { isAuthenticated, user } = useSelector((state) => state.auth);
 
   const handleLogout = () => {
     dispatch(logoutUser());
+    navigate('/login');
   };
 
   return (
@@ -14,10 +17,12 @@ function Header() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center">
-            <img className="h-8 w-auto" src="/logo.svg" alt="logo" />
-            <h1 className="ml-4 text-xl font-semibold text-gray-900">
-              Чат-бот
-            </h1>
+            <Link to="/" className="flex items-center">
+              <img className="h-8 w-auto" src="/logo.svg" alt="logo" />
+              <h1 className="ml-4 text-xl font-semibold text-gray-900">
+                Чат-бот
+              </h1>
+            </Link>
           </div>
           
           {isAuthenticated ? (
@@ -36,13 +41,14 @@ function Header() {
             <nav>
               <ul className="flex gap-6">
                 <li>
-                  <span className="text-gray-700 font-medium">Главная</span>
+                  <Link to="/login" className="text-gray-700 hover:text-gray-900 font-medium">
+                    Войти
+                  </Link>
                 </li>
                 <li>
-                  <span className="text-gray-700 font-medium">О нас</span>
-                </li>
-                <li>
-                  <span className="text-gray-700 font-medium">Контакты</span>
+                  <Link to="/register" className="text-gray-700 hover:text-gray-900 font-medium">
+                    Регистрация
+                  </Link>
                 </li>
               </ul>
             </nav>

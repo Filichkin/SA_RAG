@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { authAPI } from '../api/index';
 
 const ResetPassword = () => {
@@ -67,15 +68,22 @@ const ResetPassword = () => {
             </p>
           </div>
           <div className="mt-6">
-            <button
-              onClick={() => {
-                setIsSubmitted(false);
-                setEmail('');
-              }}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-indigo-600 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-            >
-              Отправить еще раз
-            </button>
+            <div className="space-y-3">
+              <button
+                onClick={() => {
+                  setIsSubmitted(false);
+                  setEmail('');
+                }}
+                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-indigo-600 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              >
+                Отправить еще раз
+              </button>
+              <p className="text-center">
+                <Link to="/login" className="text-sm text-indigo-600 hover:text-indigo-500">
+                  Вернуться к входу
+                </Link>
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -136,6 +144,15 @@ const ResetPassword = () => {
             </button>
           </div>
         </form>
+        
+        <div className="text-center mt-6">
+          <p className="text-sm text-gray-600">
+            Вспомнили пароль?{' '}
+            <Link to="/login" className="font-medium text-indigo-600 hover:text-indigo-500">
+              Войти
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );

@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { Link, useNavigate } from 'react-router-dom';
 import { registerUser, clearError } from '../store/slices/authSlice';
 
 const Register = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { isLoading, error } = useSelector((state) => state.auth);
   
   const [formData, setFormData] = useState({
@@ -56,7 +58,10 @@ const Register = () => {
       return;
     }
     
-    dispatch(registerUser(formData));
+    const result = await dispatch(registerUser(formData));
+    if (result.payload && result.payload.user) {
+      navigate('/login');
+    }
   };
 
   const handleInputChange = (e) => {
@@ -221,6 +226,15 @@ const Register = () => {
             </button>
           </div>
         </form>
+        
+        <div className="text-center mt-6">
+          <p className="text-sm text-gray-600">
+            Уже есть аккаунт?{' '}
+            <Link to="/login" className="font-medium text-indigo-600 hover:text-indigo-500">
+              Войти
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );
