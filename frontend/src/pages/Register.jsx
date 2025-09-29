@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { registerUser, clearError } from '../store/slices/authSlice';
 
-const RegisterForm = () => {
+const Register = () => {
   const dispatch = useDispatch();
   const { isLoading, error } = useSelector((state) => state.auth);
   
@@ -174,4 +174,4 @@ const RegisterForm = () => {
   );
 };
 
-export default RegisterForm;
+export default Register;

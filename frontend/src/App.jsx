@@ -1,9 +1,10 @@
 import React, { useEffect } from 'react';
 import { Provider, useSelector, useDispatch } from 'react-redux';
-import { store } from './store';
-import LoginForm from './components/LoginForm';
-import RegisterForm from './components/RegisterForm';
-import ChatBot from './components/ChatBot';
+import { store } from './store/store';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import Home from './pages/Home';
+import Layout from './components/Layout';
 import { getCurrentUser } from './store/slices/authSlice';
 
 function AppContent() {
@@ -31,43 +32,49 @@ function AppContent() {
   }
 
   if (isAuthenticated) {
-    return <ChatBot />;
+    return (
+      <Layout>
+        <Home />
+      </Layout>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {currentView === 'login' ? (
-        <div>
-          <LoginForm />
-          <div className="text-center pb-8">
-            <p className="text-sm text-gray-600">
-              Нет аккаунта?{' '}
-              <button
-                onClick={() => setCurrentView('register')}
-                className="font-medium text-indigo-600 hover:text-indigo-500"
-              >
-                Зарегистрироваться
-              </button>
-            </p>
+    <Layout>
+      <div className="min-h-screen bg-gray-50">
+        {currentView === 'login' ? (
+          <div>
+            <Login />
+            <div className="text-center pb-8">
+              <p className="text-sm text-gray-600">
+                Нет аккаунта?{' '}
+                <button
+                  onClick={() => setCurrentView('register')}
+                  className="font-medium text-indigo-600 hover:text-indigo-500"
+                >
+                  Зарегистрироваться
+                </button>
+              </p>
+            </div>
           </div>
-        </div>
-      ) : (
-        <div>
-          <RegisterForm />
-          <div className="text-center pb-8">
-            <p className="text-sm text-gray-600">
-              Уже есть аккаунт?{' '}
-              <button
-                onClick={() => setCurrentView('login')}
-                className="font-medium text-indigo-600 hover:text-indigo-500"
-              >
-                Войти
-              </button>
-            </p>
+        ) : (
+          <div>
+            <Register />
+            <div className="text-center pb-8">
+              <p className="text-sm text-gray-600">
+                Уже есть аккаунт?{' '}
+                <button
+                  onClick={() => setCurrentView('login')}
+                  className="font-medium text-indigo-600 hover:text-indigo-500"
+                >
+                  Войти
+                </button>
+              </p>
+            </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    </Layout>
   );
 }
 

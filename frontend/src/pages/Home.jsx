@@ -1,10 +1,6 @@
 import React, { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { logoutUser } from '../store/slices/authSlice';
 
-const ChatBot = () => {
-  const dispatch = useDispatch();
-  const { user } = useSelector((state) => state.auth);
+const Home = () => {
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
 
@@ -34,36 +30,8 @@ const ChatBot = () => {
     }, 1000);
   };
 
-  const handleLogout = () => {
-    dispatch(logoutUser());
-  };
-
   return (
     <div className="min-h-screen bg-gray-100">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <h1 className="text-xl font-semibold text-gray-900">
-                Чат-бот
-              </h1>
-            </div>
-            <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-600">
-                Добро пожаловать, {user?.first_name || 'Пользователь'}!
-              </span>
-              <button
-                onClick={handleLogout}
-                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
-              >
-                Выйти
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
-
       {/* Chat Container */}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="bg-white rounded-lg shadow-lg h-[600px] flex flex-col">
@@ -131,4 +99,4 @@ const ChatBot = () => {
   );
 };
 
-export default ChatBot;
+export default Home;

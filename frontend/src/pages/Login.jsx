@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { loginUser, verifyCode, clearError, setLoginStep } from '../store/slices/authSlice';
 
-const LoginForm = () => {
+const Login = () => {
   const dispatch = useDispatch();
   const { loginStep, isLoading, error, tempToken } = useSelector((state) => state.auth);
   
@@ -167,4 +167,4 @@ const LoginForm = () => {
   );
 };
 
-export default LoginForm;
+export default Login;
