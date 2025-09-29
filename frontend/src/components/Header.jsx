@@ -7,6 +7,10 @@ function Header() {
   const navigate = useNavigate();
   const { isAuthenticated, user } = useSelector((state) => state.auth);
 
+  // Отладочная информация
+  console.log('Header - isAuthenticated:', isAuthenticated);
+  console.log('Header - user:', user);
+
   const handleLogout = () => {
     dispatch(logoutUser());
     navigate('/login');

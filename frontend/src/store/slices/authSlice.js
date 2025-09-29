@@ -141,6 +141,8 @@ const authSlice = createSlice({
         state.tempToken = null;
         localStorage.setItem('token', action.payload.access_token);
         state.error = null;
+        // Получаем данные пользователя после успешной аутентификации
+        // Это будет выполнено в компоненте через useEffect
       })
       .addCase(verifyCode.rejected, (state, action) => {
         state.isLoading = false;

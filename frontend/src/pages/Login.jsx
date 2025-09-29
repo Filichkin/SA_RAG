@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
-import { loginUser, verifyCode, clearError, setLoginStep } from '../store/slices/authSlice';
+import { loginUser, verifyCode, clearError, setLoginStep, getCurrentUser } from '../store/slices/authSlice';
 
 const Login = () => {
   const dispatch = useDispatch();
@@ -28,6 +28,8 @@ const Login = () => {
     e.preventDefault();
     const result = await dispatch(verifyCode({ code, tempToken }));
     if (result.payload && result.payload.access_token) {
+      // Получаем данные пользователя после успешной аутентификации
+      await dispatch(getCurrentUser());
       navigate('/');
     }
   };

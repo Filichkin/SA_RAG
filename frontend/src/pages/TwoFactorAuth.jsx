@@ -1,16 +1,23 @@
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { verifyCode } from '../store/slices/authSlice';
+import { useNavigate } from 'react-router-dom';
+import { verifyCode, getCurrentUser } from '../store/slices/authSlice';
 
 const TwoFactorAuth = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { isLoading, error, tempToken } = useSelector((state) => state.auth);
   
   const [code, setCode] = useState('');
 
   const handleCodeSubmit = async (e) => {
     e.preventDefault();
-    dispatch(verifyCode({ code, tempToken }));
+    const result = await dispatch(verifyCode({ code, tempToken }));
+    if (result.payload && result.payload.access_token) {
+      // Получаем данные пользователя после успешной аутентификации
+      await dispatch(getCurrentUser());
+      navigate('/');
+    }
   };
 
   const handleInputChange = (e) => {
