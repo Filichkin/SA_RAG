@@ -24,41 +24,41 @@
 
 ```
 SA_RAG/
-├── app/                          # Основное приложение (Backend)
-│   ├── api/                      # API эндпоинты
-│   │   ├── endpoints/            # Конкретные эндпоинты
-│   │   │   ├── user.py          # Пользовательские операции
-│   │   │   ├── two_factor_auth.py # 2FA операции
-│   │   │   └── ai_agent.py      # AI агент для работы с RAG
-│   │   ├── routers.py            # Маршрутизация API
-│   │   ├── utils.py              # Утилиты API
-│   │   └── validators.py         # Валидаторы
-│   ├── core/                     # Основная логика
-│   ├── crud/                     # CRUD операции
-│   ├── models/                   # SQLAlchemy модели
-│   ├── schemas/                  # Pydantic схемы
-│   ├── services/                 # Сервисы
-│   │   ├── agent/               # AI агент
-│   │   └── mcp_rag/             # MCP RAG сервер
-│   ├── logging/                  # Система логирования
-│   └── main.py                   # Точка входа
-├── frontend/                     # Веб-интерфейс (Frontend)
+├── app/                                  # Основное приложение (Backend)
+│   ├── api/                              # API эндпоинты
+│   │   ├── endpoints/                    # Конкретные эндпоинты
+│   │   │   ├── user.py                   # Пользовательские операции
+│   │   │   ├── two_factor_auth.py        # 2FA операции
+│   │   │   └── ai_agent.py               # AI агент для работы с RAG
+│   │   ├── routers.py                    # Маршрутизация API
+│   │   ├── utils.py                      # Утилиты API
+│   │   └── validators.py                 # Валидаторы
+│   ├── core/                             # Основная логика
+│   ├── crud/                             # CRUD операции
+│   ├── models/                           # SQLAlchemy модели
+│   ├── schemas/                          # Pydantic схемы
+│   ├── services/                         # Сервисы
+│   │   ├── agent/                        # AI агент
+│   │   └── mcp_rag/                      # MCP RAG сервер
+│   ├── logging/                          # Система логирования
+│   └── main.py                           # Точка входа
+├── frontend/                             # Веб-интерфейс (Frontend)
 │   ├── src/
-│   │   ├── components/           # React компоненты
+│   │   ├── components/                   # React компоненты
 │   │   │   ├── MarkdownRenderer.jsx      # Рендеринг Markdown
 │   │   │   ├── SafeMarkdownRenderer.jsx  # Fallback рендерер
 │   │   │   ├── TypingIndicator.jsx       # Индикатор печати
 │   │   │   └── ErrorBoundary.jsx         # Обработка ошибок
-│   │   ├── pages/                # Страницы
-│   │   │   └── Home.jsx          # AI чат-бот
-│   │   ├── api/                  # API клиент
-│   │   └── store/                # Redux store
-│   ├── package.json              # Зависимости фронтенда
-│   └── README.md                 # Документация фронтенда
-├── tests/                        # Тесты
-├── alembic/                      # Миграции БД
-├── requirements.txt              # Зависимости бэкенда
-└── README.md                     # Основная документация
+│   │   ├── pages/                        # Страницы
+│   │   │   └── Home.jsx                  # AI чат-бот
+│   │   ├── api/                          # API клиент
+│   │   └── store/                        # Redux store
+│   ├── package.json                      # Зависимости фронтенда
+│   └── README.md                         # Документация фронтенда
+├── tests/                                # Тесты
+├── alembic/                              # Миграции БД
+├── requirements.txt                      # Зависимости бэкенда
+└── README.md                             # Основная документация
 ```
 
 ## 🛠 Установка и настройка
