@@ -97,6 +97,50 @@ class AuthAPI {
     console.log('API: Получен ответ на сброс пароля:', response);
     return response;
   }
+
+  // Отправка запроса к AI ассистенту с поддержкой стриминга
+  async askWithAI(query, onChunk, onError, onComplete) {
+    const token = localStorage.getItem('token');
+    const url = `${this.baseURL}/ask_with_ai`;
+    
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ query }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(`HTTP ${response.status}: ${errorData.detail || 'Ошибка сервера'}`);
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          
+          if (done) {
+            onComplete && onComplete();
+            break;
+          }
+
+          const chunk = decoder.decode(value, { stream: true });
+          onChunk && onChunk(chunk);
+        }
+      } finally {
+        reader.releaseLock();
+      }
+    } catch (error) {
+      console.error('Ошибка при запросе к AI:', error);
+      onError && onError(error);
+    }
+  }
 }
 
 export const authAPI = new AuthAPI();
