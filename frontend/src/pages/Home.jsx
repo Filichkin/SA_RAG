@@ -311,7 +311,7 @@ const Home = () => {
 
     // Use a throttled update mechanism for streaming
     let updateTimeout = null;
-    const THROTTLE_MS = 100; // Update UI every 100ms instead of every chunk
+    const THROTTLE_MS = 100; // Update UI every 300ms instead of every chunk
 
     try {
       await authAPI.askWithAI(

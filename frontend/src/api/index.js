@@ -98,6 +98,17 @@ class AuthAPI {
     return response;
   }
 
+  // Получение списка всех пользователей (только для администраторов)
+  async getUsers() {
+    const token = localStorage.getItem('token');
+    return this.request('/users', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+  }
+
   // Отправка запроса к AI ассистенту с поддержкой стриминга
   async askWithAI(query, onChunk, onError, onComplete) {
     const token = localStorage.getItem('token');
