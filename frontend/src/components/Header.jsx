@@ -34,6 +34,14 @@ function Header() {
               <span className="text-sm text-gray-600">
                 Добро пожаловать, {user?.first_name || 'Пользователь'}!
               </span>
+              {user?.is_administrator && (
+                <Link
+                  to="/admin"
+                  className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+                >
+                  Админ панель
+                </Link>
+              )}
               <button
                 onClick={handleLogout}
                 className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"

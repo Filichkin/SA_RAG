@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 import re
 from typing import Optional
 
@@ -55,6 +55,11 @@ class UserRead(UserBase, schemas.BaseUser[int]):
     first_name: str
     last_name: str
     email: EmailStr
+    is_driver: bool
+    is_assistant: bool
+    is_administrator: bool
+    created: datetime
+    updated: datetime
 
     class Config:
         # Exclude the unwanted fields from the schema
@@ -69,7 +74,9 @@ class UserRead(UserBase, schemas.BaseUser[int]):
                 "phone": "+79031234567",
                 "is_driver": True,
                 "is_assistant": False,
-                "is_administrator": False
+                "is_administrator": False,
+                "created": "2024-01-15T10:30:00Z",
+                "updated": "2024-01-20T14:45:00Z"
             }
         }
 

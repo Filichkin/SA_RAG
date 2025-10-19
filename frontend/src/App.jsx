@@ -7,9 +7,11 @@ import Register from './pages/Register';
 import Home from './pages/Home';
 import ResetPassword from './pages/ResetPassword';
 import TwoFactorAuth from './pages/TwoFactorAuth';
+import AdminPanel from './pages/AdminPanel';
 import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 import PublicRoute from './components/PublicRoute';
+import AdminRoute from './components/AdminRoute';
 import { getCurrentUser } from './store/slices/authSlice';
 
 function AppContent() {
@@ -55,6 +57,11 @@ function AppContent() {
             <ProtectedRoute>
               <Home />
             </ProtectedRoute>
+          } />
+          <Route path="/admin" element={
+            <AdminRoute>
+              <AdminPanel />
+            </AdminRoute>
           } />
 
           {/* Редирект для неизвестных маршрутов */}
